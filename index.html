@@ -186,89 +186,103 @@
   #successBox { background: rgba(76,175,80,.15); color: #a5d6a7; border: 1px solid var(--accent); }
 
   footer { text-align: center; color: #484f58; font-size: .85rem; margin-top: 40px; padding: 20px; }
+
+  .lang-bar { display: flex; justify-content: center; gap: 6px; padding: 12px 24px 0; }
+  .lang-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted); font-size: .8rem; padding: 4px 12px; cursor: pointer;
+    transition: all .2s; font-weight: 600;
+  }
+  .lang-btn:hover { border-color: var(--accent); color: var(--text); }
+  .lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(76,175,80,.1); }
 </style>
 </head>
 <body>
 
 <header>
+  <div class="lang-bar">
+    <button class="lang-btn" data-lang="es">ES</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="pt">PT</button>
+  </div>
   <h1>Metadata & WAV Studio</h1>
-  <p>Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
+  <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
 </header>
 
 <main>
   <div class="drop-zone" id="dropZone">
     <input type="file" id="fileInput" accept=".mp3,audio/mpeg">
-    <strong>Arrastra tu MP3 aquí</strong>
-    <small>o haz clic para seleccionar un archivo</small>
+    <strong data-i18n="arrastra">Arrastra tu MP3 aquí</strong>
+    <small data-i18n="oclic">o haz clic para seleccionar un archivo</small>
   </div>
 
-  <div id="fileInfo"><strong>Archivo:</strong> <span id="fileName"></span><br><strong>Tamaño:</strong> <span id="fileSize"></span><br><strong>Título actual:</strong> <span id="currentTitle"></span></div>
+  <div id="fileInfo"><strong data-i18n="archivo">Archivo:</strong> <span id="fileName"></span><br><strong data-i18n="tamano">Tamaño:</strong> <span id="fileSize"></span><br><strong data-i18n="tituloActual">Título actual:</strong> <span id="currentTitle"></span></div>
 
   <form id="editForm">
     <fieldset>
-      <label for="title">Título</label>
+      <label for="title" data-i18n="labelTitulo">Título</label>
       <input type="text" id="title">
 
-      <label for="artist">Artista</label>
+      <label for="artist" data-i18n="labelArtista">Artista</label>
       <input type="text" id="artist">
 
       <div class="row">
         <div>
-          <label for="album">Álbum</label>
+          <label for="album" data-i18n="labelAlbum">Álbum</label>
           <input type="text" id="album">
         </div>
         <div>
-          <label for="albumArtist">Artista del álbum</label>
+          <label for="albumArtist" data-i18n="labelArtistaAlbum">Artista del álbum</label>
           <input type="text" id="albumArtist">
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label for="year">Año</label>
+          <label for="year" data-i18n="labelAno">Año</label>
           <input type="text" id="year">
         </div>
         <div>
-          <label for="track">Pista (número/total)</label>
+          <label for="track" data-i18n="labelPista">Pista (número/total)</label>
           <input type="text" id="track" placeholder="ej. 3/12">
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label for="genre">Género</label>
+          <label for="genre" data-i18n="labelGenero">Género</label>
           <input type="text" id="genre">
         </div>
         <div>
-          <label for="composer">Compositor</label>
+          <label for="composer" data-i18n="labelCompositor">Compositor</label>
           <input type="text" id="composer">
         </div>
       </div>
 
-      <label for="comment">Comentario</label>
+      <label for="comment" data-i18n="labelComentario">Comentario</label>
       <input type="text" id="comment">
 
-      <label for="coverInput">Portada (opcional)</label>
-      <button type="button" class="cover-btn" id="coverBtn">Añadir o arrastrar portada aquí (JPG/PNG)</button>
+      <label for="coverInput" data-i18n="labelPortada">Portada (opcional)</label>
+      <button type="button" class="cover-btn" id="coverBtn" data-i18n="btnPortada">Añadir o arrastrar portada aquí (JPG/PNG)</button>
       <input type="file" id="coverInput" accept="image/*">
-      <p class="cover-note">La portada se incrusta dentro del audio: <strong>el archivo crecerá aprox. el tamaño de la imagen</strong>.</p>
+      <p class="cover-note" data-i18n="coverNote">La portada se incrusta dentro del audio: <strong>el archivo crecerá aprox. el tamaño de la imagen</strong>.</p>
       <div class="preview" id="coverPreview" style="display:none;">
         <img id="coverImg" alt="portada">
         <span id="coverSize"></span>
-        <button type="button" class="remove-cover" id="removeCover">Quitar portada</button>
+        <button type="button" class="remove-cover" id="removeCover" data-i18n="btnQuitarPortada">Quitar portada</button>
       </div>
 
       <div class="convert-div">
-        <label>Formato de salida</label>
+        <label data-i18n="formatoSalida">Formato de salida</label>
         <div class="radio-row">
-          <label class="radio-label"><input type="radio" name="outFormat" value="mp3" checked> MP3 (solo metadatos)</label>
-          <label class="radio-label"><input type="radio" name="outFormat" value="wav"> WAV (convertir audio)</label>
+          <label class="radio-label"><input type="radio" name="outFormat" value="mp3" checked> <span data-i18n="mp3Solo">MP3 (solo metadatos)</span></label>
+          <label class="radio-label"><input type="radio" name="outFormat" value="wav"> <span data-i18n="wavConvertir">WAV (convertir audio)</span></label>
         </div>
 
         <div id="wavOptions" style="display:none;">
           <div class="row">
             <div>
-              <label for="wavBits">Profundidad de bits</label>
+              <label for="wavBits" data-i18n="labelBits">Profundidad de bits</label>
               <select id="wavBits">
                 <option value="16">16 bits (CD)</option>
                 <option value="24">24 bits</option>
@@ -278,7 +292,7 @@
               </select>
             </div>
             <div>
-              <label for="wavRate">Frecuencia de muestreo</label>
+              <label for="wavRate" data-i18n="labelFrecuencia">Frecuencia de muestreo</label>
               <select id="wavRate">
                 <option value="8000">8000 Hz</option>
                 <option value="11025">11025 Hz</option>
@@ -296,14 +310,14 @@
 
           <div class="row">
             <div>
-              <label for="wavCh">Canales</label>
+              <label for="wavCh" data-i18n="labelCanales">Canales</label>
               <select id="wavCh">
                 <option value="2" selected>Estéreo</option>
                 <option value="1">Mono</option>
               </select>
             </div>
             <div>
-              <label for="wavNorm">Normalizar</label>
+              <label for="wavNorm" data-i18n="labelNormalizar">Normalizar</label>
               <select id="wavNorm">
                 <option value="auto" selected>Automático (-1 dB)</option>
                 <option value="none">Sin normalizar</option>
@@ -313,14 +327,14 @@
           </div>
 
           <p class="cover-note" id="wavNote"></p>
-          <p class="cover-note">Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
+          <p class="cover-note" data-i18n="wavMetaNote">Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
         </div>
       </div>
     </fieldset>
 
     <div class="actions">
-      <button type="submit" class="btn-download" id="saveBtn">Guardar y descargar</button>
-      <button type="button" class="btn-cancel" id="cancelBtn">Cancelar</button>
+      <button type="submit" class="btn-download" id="saveBtn" data-i18n="btnGuardar">Guardar y descargar</button>
+      <button type="button" class="btn-cancel" id="cancelBtn" data-i18n="btnCancelar">Cancelar</button>
     </div>
   </form>
 
@@ -335,6 +349,176 @@
 
 <script>
 (function () {
+  const translations = {
+    es: {
+      subtitulo: 'Edita metadatos, cambia portadas y convierte MP3 a WAV.',
+      arrastra: 'Arrastra tu MP3 aquí',
+      oclic: 'o haz clic para seleccionar un archivo',
+      archivo: 'Archivo:',
+      tamano: 'Tamaño:',
+      tituloActual: 'Título actual:',
+      labelTitulo: 'Título',
+      labelArtista: 'Artista',
+      labelAlbum: 'Álbum',
+      labelArtistaAlbum: 'Artista del álbum',
+      labelAno: 'Año',
+      labelPista: 'Pista (número/total)',
+      labelGenero: 'Género',
+      labelCompositor: 'Compositor',
+      labelComentario: 'Comentario',
+      labelPortada: 'Portada (opcional)',
+      btnPortada: 'Añadir o arrastrar portada aquí (JPG/PNG)',
+      coverNote: 'La portada se incrusta dentro del audio: el archivo crecerá aprox. el tamaño de la imagen.',
+      btnQuitarPortada: 'Quitar portada',
+      formatoSalida: 'Formato de salida',
+      mp3Solo: 'MP3 (solo metadatos)',
+      wavConvertir: 'WAV (convertir audio)',
+      labelBits: 'Profundidad de bits',
+      labelFrecuencia: 'Frecuencia de muestreo',
+      labelCanales: 'Canales',
+      labelNormalizar: 'Normalizar',
+      wavMetaNote: 'Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.',
+      btnGuardar: 'Guardar y descargar',
+      btnCancelar: 'Cancelar',
+      soloMp3: 'Solo se admite formato MP3.',
+      libLectora: 'No se pudo cargar la librería lectora. Revisa tu conexión a internet.',
+      libEscritora: 'No se pudo cargar la librería escritora. Revisa tu conexión a internet.',
+      imagenError: 'El archivo debe ser una imagen (JPG, PNG, etc.).',
+      portadaLeida: 'Metadatos leídos. Este MP3 tiene una portada: al guardar se reemplazará por la que elijas, o desaparecerá si no eliges ninguna.',
+      metadatosLeidos: 'Metadatos leídos correctamente. Puedes editarlos.',
+      sinMetadatos: 'No se encontraron metadatos previos. Puedes escribirlos.',
+      guardando: 'Convirtiendo…',
+      wavExito: 'Convertido a WAV. Revisa tu carpeta de Descargas. Tamaño: ',
+      wavError: 'No se pudo convertir a WAV. Si elegiste una frecuencia alta (192000 Hz), prueba con 96000 Hz o menor. Detalle: ',
+      metaGuardados: 'Metadatos guardados',
+      conPortada: ' con portada',
+      sinPortada: ' sin portada',
+      descarga: '. Revisa tu carpeta de Descargas. Tamaño: ',
+      original: ' (original: ',
+      errorMeta: 'Error al escribir los metadatos: '
+    },
+    en: {
+      subtitulo: 'Edit metadata, change covers and convert MP3 to WAV.',
+      arrastra: 'Drag your MP3 here',
+      oclic: 'or click to select a file',
+      archivo: 'File:',
+      tamano: 'Size:',
+      tituloActual: 'Current title:',
+      labelTitulo: 'Title',
+      labelArtista: 'Artist',
+      labelAlbum: 'Album',
+      labelArtistaAlbum: 'Album artist',
+      labelAno: 'Year',
+      labelPista: 'Track (number/total)',
+      labelGenero: 'Genre',
+      labelCompositor: 'Composer',
+      labelComentario: 'Comment',
+      labelPortada: 'Cover art (optional)',
+      btnPortada: 'Add or drag cover art here (JPG/PNG)',
+      coverNote: 'The cover is embedded in the audio: the file will grow by approximately the image size.',
+      btnQuitarPortada: 'Remove cover',
+      formatoSalida: 'Output format',
+      mp3Solo: 'MP3 (metadata only)',
+      wavConvertir: 'WAV (convert audio)',
+      labelBits: 'Bit depth',
+      labelFrecuencia: 'Sample rate',
+      labelCanales: 'Channels',
+      labelNormalizar: 'Normalize',
+      wavMetaNote: 'The metadata you entered above is also saved in the WAV. Cover art is not saved in WAV format.',
+      btnGuardar: 'Save and download',
+      btnCancelar: 'Cancel',
+      soloMp3: 'Only MP3 format is supported.',
+      libLectora: 'Could not load the reader library. Check your internet connection.',
+      libEscritora: 'Could not load the writer library. Check your internet connection.',
+      imagenError: 'The file must be an image (JPG, PNG, etc.).',
+      portadaLeida: 'Metadata read. This MP3 has a cover: when saving it will be replaced by your choice, or removed if you select none.',
+      metadatosLeidos: 'Metadata read successfully. You can edit it.',
+      sinMetadatos: 'No previous metadata found. You can write them.',
+      guardando: 'Converting…',
+      wavExito: 'Converted to WAV. Check your Downloads folder. Size: ',
+      wavError: 'Could not convert to WAV. If you chose a high sample rate (192000 Hz), try 96000 Hz or lower. Details: ',
+      metaGuardados: 'Metadata saved',
+      conPortada: ' with cover',
+      sinPortada: ' without cover',
+      descarga: '. Check your Downloads folder. Size: ',
+      original: ' (original: ',
+      errorMeta: 'Error writing metadata: '
+    },
+    pt: {
+      subtitulo: 'Edite metadatos, troque capas e converta MP3 para WAV.',
+      arrastra: 'Arraste seu MP3 aqui',
+      oclic: 'ou clique para selecionar um arquivo',
+      arquivo: 'Arquivo:',
+      tamano: 'Tamanho:',
+      tituloActual: 'Título atual:',
+      labelTitulo: 'Título',
+      labelArtista: 'Artista',
+      labelAlbum: 'Álbum',
+      labelArtistaAlbum: 'Artista do álbum',
+      labelAno: 'Ano',
+      labelPista: 'Faixa (número/total)',
+      labelGenero: 'Gênero',
+      labelCompositor: 'Compositor',
+      labelComentario: 'Comentário',
+      labelPortada: 'Capa (opcional)',
+      btnPortada: 'Adicionar ou arrastar capa aqui (JPG/PNG)',
+      coverNote: 'A capa é incorporada no áudio: o arquivo crescerá aproximadamente pelo tamanho da imagem.',
+      btnQuitarPortada: 'Remover capa',
+      formatoSalida: 'Formato de saída',
+      mp3Solo: 'MP3 (somente metadados)',
+      wavConvertir: 'WAV (converter áudio)',
+      labelBits: 'Profundidade de bits',
+      labelFrecuencia: 'Taxa de amostragem',
+      labelCanales: 'Canais',
+      labelNormalizar: 'Normalizar',
+      wavMetaNote: 'Os metadados que você preencheu acima também são salvos no WAV. A capa não é salva no formato WAV.',
+      btnGuardar: 'Salvar e baixar',
+      btnCancelar: 'Cancelar',
+      soloMp3: 'Somente o formato MP3 é aceito.',
+      libLectora: 'Não foi possível carregar a biblioteca leitora. Verifique sua conexão com a internet.',
+      libEscritora: 'Não foi possível carregar a biblioteca escritora. Verifique sua conexão com a internet.',
+      imagenError: 'O arquivo deve ser uma imagem (JPG, PNG, etc.).',
+      portadaLeida: 'Metadados lidos. Este MP3 tem uma capa: ao salvar será substituída pela sua escolha, ou removida se não selecionar nenhuma.',
+      metadatosLeidos: 'Metadados lidos com sucesso. Você pode editá-los.',
+      sinMetadatos: 'Nenhum metadado anterior encontrado. Você pode escrevê-los.',
+      guardando: 'Convertendo…',
+      wavExito: 'Convertido para WAV. Verifique sua pasta de Downloads. Tamanho: ',
+      wavError: 'Não foi possível converter para WAV. Se você escolheu uma taxa alta (192000 Hz), tente 96000 Hz ou menor. Detalhe: ',
+      metaGuardados: 'Metadados salvos',
+      conPortada: ' com capa',
+      sinPortada: ' sem capa',
+      descarga: '. Verifique sua pasta de Downloads. Tamanho: ',
+      original: ' (original: ',
+      errorMeta: 'Erro ao escrever metadados: '
+    }
+  };
+
+  let currentLang = localStorage.getItem('lang') || detectLang();
+
+  function detectLang() {
+    const nav = navigator.language.slice(0, 2);
+    return translations[nav] ? nav : 'es';
+  }
+
+  function setLanguage(lang) {
+    if (!translations[lang]) return;
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      el.textContent = translations[lang][key] || key;
+    });
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang')));
+  });
+
+  setLanguage(currentLang);
+
   const dropZone     = document.getElementById('dropZone');
   const fileInput    = document.getElementById('fileInput');
   const fileInfo     = document.getElementById('fileInfo');
@@ -419,7 +603,7 @@
 
   function busy(on) {
     get('saveBtn').disabled = on;
-    get('saveBtn').textContent = on ? 'Convirtiendo…' : 'Guardar y descargar';
+    get('saveBtn').textContent = on ? translations[currentLang].guardando : translations[currentLang].btnGuardar;
   }
 
   function estimateMbPerMin(rate, bits, ch) {
@@ -628,11 +812,11 @@
   function setCover(file) {
     if (!file) { coverBlob = null; coverPending = null; get('coverPreview').style.display = 'none'; return; }
     if (!file.type && !/\.(jpe?g|png|gif|webp|bmp|tiff?)$/i.test(file.name)) {
-      showError('El archivo debe ser una imagen (JPG, PNG, etc.).');
+      showError(translations[currentLang].imagenError);
       return;
     }
     if (file.type && !file.type.startsWith('image/')) {
-      showError('El archivo debe ser una imagen (JPG, PNG, etc.).');
+      showError(translations[currentLang].imagenError);
       return;
     }
     const reader = new FileReader();
@@ -649,7 +833,7 @@
     }).catch(() => {
       coverBlob = null;
       coverPending = null;
-      showError('No se pudo leer la portada.');
+      showError(translations[currentLang].imagenError);
       get('coverPreview').style.display = 'none';
     });
   }
@@ -686,7 +870,7 @@
 
   function loadFile(file) {
     if (!file.name.toLowerCase().endsWith('.mp3')) {
-      showError('Solo se admite formato MP3.');
+      showError(translations[currentLang].soloMp3);
       return;
     }
     currentFile = file;
@@ -711,7 +895,7 @@
     if (window.jsmediatags) {
       tagReader = jsmediatags.read;
     } else {
-      showError('No se pudo cargar la librería lectora. Revisa tu conexión a internet.');
+      showError(translations[currentLang].libLectora);
       form.style.display = 'block';
       return;
     }
@@ -733,14 +917,14 @@
         }
         currentTitle.textContent = t.title || originalTags.title;
         if (t.picture) {
-          showSuccess('Metadatos leídos. Este MP3 tiene una portada: al guardar se reemplazará por la que elijas, o desaparecerá si no eliges ninguna.');
+          showSuccess(translations[currentLang].portadaLeida);
         } else {
-          showSuccess('Metadatos leídos correctamente. Puedes editarlos.');
+          showSuccess(translations[currentLang].metadatosLeidos);
         }
       },
       onError: function (e) {
         // No hay tags previos: igual podemos editar
-        showSuccess('No se encontraron metadatos previos. Puedes escribirlos.');
+        showSuccess(translations[currentLang].sinMetadatos);
       }
     });
 
@@ -753,7 +937,7 @@
     if (!currentFile) return;
 
     if (typeof ID3Writer === 'undefined') {
-      showError('No se pudo cargar la librería escritora. Revisa tu conexión a internet.');
+      showError(translations[currentLang].libEscritora);
       return;
     }
 
@@ -777,10 +961,10 @@
           const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
           const chLabel = get('wavCh').value === '1' ? 'mono' : 'stereo';
           saveBlob(blob, base + '_' + get('wavRate').value + 'Hz_' + chLabel + '_' + bitsLabel + '.wav');
-          showSuccess('Convertido a WAV. Revisa tu carpeta de Descargas. Tamaño: ' + formatSize(blob.size));
+          showSuccess(translations[currentLang].wavExito + formatSize(blob.size));
         } catch (err) {
           console.error(err);
-          showError('No se pudo convertir a WAV. Si elegiste una frecuencia alta (192000 Hz), prueba con 96000 Hz o menor. Detalle: ' + err.message);
+          showError(translations[currentLang].wavError + err.message);
         } finally {
           busy(false);
         }
@@ -817,10 +1001,10 @@
       const blob = writer.getBlob();
       saveBlob(blob, (get('title').value.trim() || currentFile.name.replace(/\.mp3$/i, '')) + '.mp3');
 
-      showSuccess('Metadatos guardados' + (coverBlob ? ' con portada' : ' sin portada') + '. Revisa tu carpeta de Descargas. Tamaño: ' + formatSize(blob.size) + ' (original: ' + formatSize(originalSize) + ').');
+      showSuccess(translations[currentLang].metaGuardados + (coverBlob ? translations[currentLang].conPortada : translations[currentLang].sinPortada) + translations[currentLang].descarga + formatSize(blob.size) + translations[currentLang].original + formatSize(originalSize) + ').');
     } catch (err) {
       console.error(err);
-      showError('Error al escribir los metadatos: ' + err.message);
+      showError(translations[currentLang].errorMeta + err.message);
     }
   });
 })();
