@@ -349,6 +349,30 @@
 
 <script>
 (function () {
+  function save(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      console.error('Error guardando:', e);
+      return false;
+    }
+  }
+
+  function load(key, fallback = null) {
+    try {
+      const data = localStorage.getItem(key);
+      return data !== null ? JSON.parse(data) : fallback;
+    } catch (e) {
+      console.error('Error cargando:', e);
+      return fallback;
+    }
+  }
+
+  function remove(key) {
+    localStorage.removeItem(key);
+  }
+
   const translations = {
     es: {
       subtitulo: 'Edita metadatos, cambia portadas y convierte MP3 a WAV.',
@@ -493,7 +517,7 @@
     }
   };
 
-  let currentLang = localStorage.getItem('lang') || detectLang();
+  let currentLang = load('lang') || detectLang();
 
   function detectLang() {
     const nav = navigator.language.slice(0, 2);
@@ -503,7 +527,7 @@
   function setLanguage(lang) {
     if (!translations[lang]) return;
     currentLang = lang;
-    localStorage.setItem('lang', lang);
+    save('lang', lang);
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       el.textContent = translations[lang][key] || key;
