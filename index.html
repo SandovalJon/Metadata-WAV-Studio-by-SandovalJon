@@ -195,6 +195,16 @@
   }
   .lang-btn:hover { border-color: var(--accent); color: var(--text); }
   .lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(76,175,80,.1); }
+
+  .auth-bar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 8px 24px 0; }
+  .auth-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted); font-size: .8rem; padding: 4px 12px; cursor: pointer;
+    transition: all .2s; font-weight: 600;
+  }
+  .auth-btn:hover { border-color: var(--accent); color: var(--text); }
+  .user-info { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: .85rem; }
+  .user-info img { border-radius: 50%; border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -204,6 +214,16 @@
     <button class="lang-btn" data-lang="es">ES</button>
     <button class="lang-btn" data-lang="en">EN</button>
     <button class="lang-btn" data-lang="pt">PT</button>
+  </div>
+  <div class="auth-bar">
+    <div id="loginSection">
+      <button class="auth-btn" data-i18n="btnIniciar" onclick="doLogin()">Iniciar con Google</button>
+    </div>
+    <div id="userSection" class="user-info" style="display:none">
+      <img id="userPhoto" width="32">
+      <span id="userName"></span>
+      <button class="auth-btn" data-i18n="btnCerrar" onclick="doLogout()">Cerrar</button>
+    </div>
   </div>
   <h1>Metadata & WAV Studio</h1>
   <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
@@ -346,6 +366,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script>
 (function () {
@@ -404,6 +426,8 @@
       wavMetaNote: 'Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.',
       btnGuardar: 'Guardar y descargar',
       btnCancelar: 'Cancelar',
+      btnIniciar: 'Iniciar con Google',
+      btnCerrar: 'Cerrar',
       soloMp3: 'Solo se admite formato MP3.',
       libLectora: 'No se pudo cargar la librería lectora. Revisa tu conexión a internet.',
       libEscritora: 'No se pudo cargar la librería escritora. Revisa tu conexión a internet.',
@@ -451,6 +475,8 @@
       wavMetaNote: 'The metadata you entered above is also saved in the WAV. Cover art is not saved in WAV format.',
       btnGuardar: 'Save and download',
       btnCancelar: 'Cancel',
+      btnIniciar: 'Sign in with Google',
+      btnCerrar: 'Sign out',
       soloMp3: 'Only MP3 format is supported.',
       libLectora: 'Could not load the reader library. Check your internet connection.',
       libEscritora: 'Could not load the writer library. Check your internet connection.',
@@ -498,6 +524,8 @@
       wavMetaNote: 'Os metadados que você preencheu acima também são salvos no WAV. A capa não é salva no formato WAV.',
       btnGuardar: 'Salvar e baixar',
       btnCancelar: 'Cancelar',
+      btnIniciar: 'Entrar com Google',
+      btnCerrar: 'Sair',
       soloMp3: 'Somente o formato MP3 é aceito.',
       libLectora: 'Não foi possível carregar a biblioteca leitora. Verifique sua conexão com a internet.',
       libEscritora: 'Não foi possível carregar a biblioteca escritora. Verifique sua conexão com a internet.',
@@ -542,6 +570,44 @@
   });
 
   setLanguage(currentLang);
+
+  // ===== FIREBASE AUTH =====
+  // Reemplaza esta config con la de tu proyecto Firebase
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    projectId: "TU_PROYECTO",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  window.doLogin = function () {
+    auth.signInWithPopup(provider).catch(err => {
+      console.error('Error login:', err);
+    });
+  };
+
+  window.doLogout = function () {
+    auth.signOut();
+  };
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('userSection').style.display = 'flex';
+      document.getElementById('userName').textContent = user.displayName;
+      document.getElementById('userPhoto').src = user.photoURL;
+    } else {
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('userSection').style.display = 'none';
+    }
+  });
+  // ===== END FIREBASE AUTH =====
 
   const dropZone     = document.getElementById('dropZone');
   const fileInput    = document.getElementById('fileInput');
