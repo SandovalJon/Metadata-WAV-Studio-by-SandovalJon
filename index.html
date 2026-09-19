@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metadata & WAV Studio</title>
+<style>
+  :root {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --border: #333;
+    --text: #e0e0e0;
+    --muted: #9a9a9a;
+    --accent: #4caf50;
+    --danger: #e53935;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    padding: 24px 24px 8px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 1.6rem; }
+  header p { color: var(--muted); margin: 6px 0 0; font-size: .9rem; }
+  main { max-width: 720px; margin: 0 auto; padding: 16px 24px 48px; }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    margin-bottom: 20px;
+  }
+  .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(76,175,80,.08);
+  }
+  .drop-zone input { display: none; }
+  .drop-zone strong { display: block; margin-bottom: 4px; color: var(--text); }
+  .drop-zone small { display: block; }
+
+  #fileInfo {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: .9rem;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  #fileInfo span { color: var(--text); }
+
+  form {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  form fieldset { border: none; padding: 0; margin: 0; }
+  label { display: block; font-size: .8rem; color: var(--muted); margin: 12px 0 4px; }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: .95rem;
+  }
+  input:focus { outline: none; border-color: var(--accent); }
+  input[type="file"] { display: none; }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+
+  .preview {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+  .preview img {
+    width: 64px; height: 64px; object-fit: cover;
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  .cover-note {
+    color: var(--muted);
+    font-size: .8rem;
+    margin: 6px 0 0;
+  }
+  .cover-btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: .95rem;
+    text-align: center;
+    transition: border-color .2s, background .2s;
+  }
+  .cover-btn:hover {
+    border-color: var(--accent);
+    background: rgba(76,175,80,.06);
+  }
+  .cover-btn.dragover {
+    border-color: var(--accent);
+    background: rgba(76,175,80,.15);
+    color: var(--accent);
+  }
+  .remove-cover {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--danger);
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .remove-cover:hover { filter: brightness(1.1); }
+
+  select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: .95rem;
+  }
+  .radio-row { display: flex; gap: 20px; margin-top: 4px; flex-wrap: wrap; }
+  .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--text);
+    font-size: .95rem;
+    cursor: pointer;
+  }
+  .convert-div {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+
+  .actions { display: flex; gap: 12px; margin-top: 24px; }
+  button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter .15s;
+  }
+  button:hover { filter: brightness(1.1); }
+  .btn-download { background: var(--accent); color: #fff; }
+  .btn-cancel { background: #333; color: var(--text); }
+  #errorBox, #successBox {
+    display: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: .9rem;
+  }
+  #errorBox { background: rgba(229,57,53,.15); color: #ff8a80; border: 1px solid var(--danger); }
+  #successBox { background: rgba(76,175,80,.15); color: #a5d6a7; border: 1px solid var(--accent); }
+
+  footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Metadata & WAV Studio</h1>
+  <p>Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
+</header>
+
+<main>
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".mp3,audio/mpeg">
+    <strong>Arrastra tu MP3 aquí</strong>
+    <small>o haz clic para seleccionar un archivo</small>
+  </div>
+
+  <div id="fileInfo"><strong>Archivo:</strong> <span id="fileName"></span><br><strong>Tamaño:</strong> <span id="fileSize"></span><br><strong>Título actual:</strong> <span id="currentTitle"></span></div>
+
+  <form id="editForm">
+    <fieldset>
+      <label for="title">Título</label>
+      <input type="text" id="title">
+
+      <label for="artist">Artista</label>
+      <input type="text" id="artist">
+
+      <div class="row">
+        <div>
+          <label for="album">Álbum</label>
+          <input type="text" id="album">
+        </div>
+        <div>
+          <label for="albumArtist">Artista del álbum</label>
+          <input type="text" id="albumArtist">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="year">Año</label>
+          <input type="text" id="year">
+        </div>
+        <div>
+          <label for="track">Pista (número/total)</label>
+          <input type="text" id="track" placeholder="ej. 3/12">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="genre">Género</label>
+          <input type="text" id="genre">
+        </div>
+        <div>
+          <label for="composer">Compositor</label>
+          <input type="text" id="composer">
+        </div>
+      </div>
+
+      <label for="comment">Comentario</label>
+      <input type="text" id="comment">
+
+      <label for="coverInput">Portada (opcional)</label>
+      <button type="button" class="cover-btn" id="coverBtn">Añadir o arrastrar portada aquí (JPG/PNG)</button>
+      <input type="file" id="coverInput" accept="image/*">
+      <p class="cover-note">La portada se incrusta dentro del audio: <strong>el archivo crecerá aprox. el tamaño de la imagen</strong>.</p>
+      <div class="preview" id="coverPreview" style="display:none;">
+        <img id="coverImg" alt="portada">
+        <span id="coverSize"></span>
+        <button type="button" class="remove-cover" id="removeCover">Quitar portada</button>
+      </div>
+
+      <div class="convert-div">
+        <label>Formato de salida</label>
+        <div class="radio-row">
+          <label class="radio-label"><input type="radio" name="outFormat" value="mp3" checked> MP3 (solo metadatos)</label>
+          <label class="radio-label"><input type="radio" name="outFormat" value="wav"> WAV (convertir audio)</label>
+        </div>
+
+        <div id="wavOptions" style="display:none;">
+          <div class="row">
+            <div>
+              <label for="wavBits">Profundidad de bits</label>
+              <select id="wavBits">
+                <option value="16">16 bits (CD)</option>
+                <option value="24">24 bits</option>
+                <option value="32">32 bits (entero)</option>
+                <option value="32f">32 bits (flotante)</option>
+                <option value="8">8 bits</option>
+              </select>
+            </div>
+            <div>
+              <label for="wavRate">Frecuencia de muestreo</label>
+              <select id="wavRate">
+                <option value="8000">8000 Hz</option>
+                <option value="11025">11025 Hz</option>
+                <option value="16000">16000 Hz</option>
+                <option value="22050">22050 Hz</option>
+                <option value="32000">32000 Hz</option>
+                <option value="44100" selected>44100 Hz</option>
+                <option value="48000">48000 Hz</option>
+                <option value="88200">88200 Hz</option>
+                <option value="96000">96000 Hz</option>
+                <option value="192000">192000 Hz</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="wavCh">Canales</label>
+              <select id="wavCh">
+                <option value="2" selected>Estéreo</option>
+                <option value="1">Mono</option>
+              </select>
+            </div>
+            <div>
+              <label for="wavNorm">Normalizar</label>
+              <select id="wavNorm">
+                <option value="auto" selected>Automático (-1 dB)</option>
+                <option value="none">Sin normalizar</option>
+                <option value="max">Máximo (0 dB)</option>
+              </select>
+            </div>
+          </div>
+
+          <p class="cover-note" id="wavNote"></p>
+          <p class="cover-note">Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit" class="btn-download" id="saveBtn">Guardar y descargar</button>
+      <button type="button" class="btn-cancel" id="cancelBtn">Cancelar</button>
+    </div>
+  </form>
+
+  <div id="errorBox"></div>
+  <div id="successBox"></div>
+</main>
+
+<footer>El archivo descargado tendrá una copia en tu carpeta de Descargas.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.js"></script>
+
+<script>
+(function () {
+  const dropZone     = document.getElementById('dropZone');
+  const fileInput    = document.getElementById('fileInput');
+  const fileInfo     = document.getElementById('fileInfo');
+  const fileNameEl   = document.getElementById('fileName');
+  const currentTitle = document.getElementById('currentTitle');
+  const form         = document.getElementById('editForm');
+  const errorBox     = document.getElementById('errorBox');
+  const successBox   = document.getElementById('successBox');
+
+  let currentFile = null;
+  let originalTags = {};
+  let coverBlob = null;
+  let coverPending = null;
+  let originalSize = 0;
+
+  const get = id => document.getElementById(id);
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  // Elimina TODAS las etiquetas ID3 viejas (al inicio y al final) y el ID3v1,
+  // de modo que la portada/imagen original incrustada se elimina por completo.
+  function cleanAudio(arrayBuffer) {
+    function isId3v2(u, off) {
+      return off >= 0 && off + 10 <= u.length &&
+        u[off] === 73 && u[off + 1] === 68 && u[off + 2] === 51 &&
+        (u[off + 3] === 2 || u[off + 3] === 3 || u[off + 3] === 4);
+    }
+    function tagSize(u, off) {
+      return 10 + ((u[off + 6] << 21) | (u[off + 7] << 14) | (u[off + 8] << 7) | u[off + 9]);
+    }
+    let b = new Uint8Array(arrayBuffer);
+    let guard = 0;
+    while (b.length >= 10 && isId3v2(b, 0) && guard < 10) {
+      const s = tagSize(b, 0);
+      if (s > b.length || s < 10) break;
+      b = b.slice(s);
+      guard++;
+    }
+    guard = 0;
+    while (b.length >= 10 && isId3v2(b, b.length - 10) && guard < 10) {
+      const s = tagSize(b, b.length - 10);
+      if (s > b.length || s < 10) break;
+      b = b.slice(0, b.length - s);
+      guard++;
+    }
+    if (b.length >= 128 && b[b.length - 128] === 84 && b[b.length - 127] === 65 && b[b.length - 126] === 71) {
+      b = b.slice(0, b.length - 128);
+    }
+    return b.buffer;
+  }
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.style.display = 'block';
+    successBox.style.display = 'none';
+    setTimeout(() => { errorBox.style.display = 'none'; }, 6000);
+  }
+
+  function showSuccess(msg) {
+    successBox.textContent = msg;
+    successBox.style.display = 'block';
+    errorBox.style.display = 'none';
+    setTimeout(() => { successBox.style.display = 'none'; }, 6000);
+  }
+
+  function setField(id, value) {
+    get(id).value = (value !== undefined && value !== null) ? String(value) : '';
+  }
+
+  function saveBlob(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  }
+
+  function busy(on) {
+    get('saveBtn').disabled = on;
+    get('saveBtn').textContent = on ? 'Convirtiendo…' : 'Guardar y descargar';
+  }
+
+  function estimateMbPerMin(rate, bits, ch) {
+    const bytes = bits === '32f' ? 4 : parseInt(bits, 10) / 8;
+    return (rate * ch * bytes * 60) / (1024 * 1024);
+  }
+
+  function updateWavNote() {
+    const rate = parseInt(get('wavRate').value, 10);
+    const bits = get('wavBits').value;
+    const ch = parseInt(get('wavCh').value, 10);
+    const mb = estimateMbPerMin(rate, bits, ch);
+    get('wavNote').textContent = 'Tamaño aprox: ' + (mb >= 1 ? mb.toFixed(1) + ' MB' : (mb * 1024).toFixed(0) + ' KB') + ' por minuto';
+  }
+
+  document.querySelectorAll('input[name="outFormat"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const wav = document.querySelector('input[name="outFormat"]:checked').value === 'wav';
+      get('wavOptions').style.display = wav ? 'block' : 'none';
+      if (wav) updateWavNote();
+    });
+  });
+  ['wavBits', 'wavRate', 'wavCh'].forEach(id => get(id).addEventListener('change', updateWavNote));
+
+  function asciiBytes(str) {
+    let s = '';
+    for (const ch of String(str === undefined ? '' : str)) {
+      const code = ch.charCodeAt(0);
+      s += code <= 127 ? ch : '?';
+    }
+    return s;
+  }
+
+  function buildListInfo() {
+    const fields = [
+      ['INAM', get('title').value],
+      ['IART', get('artist').value],
+      ['IPRD', get('album').value],
+      ['ICRD', get('year').value],
+      ['ITRK', get('track').value],
+      ['IGNR', get('genre').value],
+      ['ICMT', get('comment').value]
+    ];
+    const chunks = [];
+    let total = 4;
+    for (const f of fields) {
+      const s = asciiBytes(f[1].trim());
+      if (!s) continue;
+      const size = s.length + (s.length % 2);
+      chunks.push({ id: f[0], s: s, size: size });
+      total += 8 + size;
+    }
+    const buf = new ArrayBuffer(8 + total);
+    const view = new DataView(buf);
+    function ascii(dst, o, str) {
+      for (let k = 0; k < str.length; k++) view.setUint8(dst + o + k, str.charCodeAt(k));
+    }
+    ascii(0, 0, 'LIST');
+    view.setUint32(4, total, true);
+    ascii(0, 8, 'INFO');
+    let o = 12;
+    for (const c of chunks) {
+      ascii(0, o, c.id);
+      view.setUint32(o + 4, c.size, true);
+      ascii(0, o + 8, c.s);
+      o += 8 + c.size;
+    }
+    return new Uint8Array(buf);
+  }
+
+  function encodeWav(audioBuffer, bitDepth, isFloat) {
+    const numCh = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const length = audioBuffer.length;
+    const bytesPerSample = isFloat ? 4 : bitDepth / 8;
+    const blockAlign = numCh * bytesPerSample;
+    const dataSize = length * blockAlign;
+
+    const list = buildListInfo();
+    const listExtra = list ? 8 + list.length : 0;
+    const riffSize = 36 + dataSize + listExtra;
+    const total = 44 + dataSize + listExtra;
+
+    const buffer = new ArrayBuffer(total);
+    const view = new DataView(buffer);
+    function ascii(dst, o, str) {
+      for (let k = 0; k < str.length; k++) view.setUint8(dst + o + k, str.charCodeAt(k));
+    }
+
+    ascii(0, 0, 'RIFF');
+    view.setUint32(4, riffSize, true);
+    ascii(0, 8, 'WAVE');
+    ascii(0, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, isFloat ? 3 : 1, true);
+    view.setUint16(22, numCh, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    ascii(0, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    let offset = 44;
+    const chans = [];
+    for (let c = 0; c < numCh; c++) chans.push(audioBuffer.getChannelData(c));
+
+    for (let i = 0; i < length; i++) {
+      for (let c = 0; c < numCh; c++) {
+        let s = chans[c][i];
+        if (isFloat) {
+          view.setFloat32(offset, s, true);
+          offset += 4;
+        } else if (bitDepth === 8) {
+          let v = Math.round(s * 127 + 128);
+          if (v < 0) v = 0; if (v > 255) v = 255;
+          view.setUint8(offset, v);
+          offset += 1;
+        } else if (bitDepth === 16) {
+          let v = Math.round(s * 32767);
+          if (v < -32768) v = -32768; if (v > 32767) v = 32767;
+          view.setInt16(offset, v, true);
+          offset += 2;
+        } else if (bitDepth === 24) {
+          let v = Math.round(s * 8388607);
+          if (v < -8388608) v = -8388608; if (v > 8388607) v = 8388607;
+          view.setUint8(offset, v & 0xff);
+          view.setUint8(offset + 1, (v >> 8) & 0xff);
+          view.setUint8(offset + 2, (v >> 16) & 0xff);
+          offset += 3;
+        } else {
+          let v = Math.round(s * 2147483647);
+          if (v < -2147483648) v = -2147483648;
+          if (v > 2147483647) v = 2147483647;
+          view.setInt32(offset, v, true);
+          offset += 4;
+        }
+      }
+    }
+
+    if (list) {
+      ascii(0, offset, 'LIST');
+      view.setUint32(offset + 4, list.length - 8, true);
+      new Uint8Array(buffer, offset + 8).set(list.subarray(8));
+    }
+
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  async function convertToWav(file, opts) {
+    const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioContextCtor();
+    const arrayBuffer = await file.arrayBuffer();
+    const audio = await ctx.decodeAudioData(arrayBuffer);
+    await ctx.close();
+
+    const channels = opts.channels;
+    const length = Math.ceil(audio.duration * opts.sampleRate);
+    const offline = new OfflineAudioContext(channels, length, opts.sampleRate);
+    const source = offline.createBufferSource();
+    source.buffer = audio;
+    source.connect(offline.destination);
+    source.start(0);
+    const rendered = await offline.startRendering();
+
+    if (opts.normalize !== 'none') {
+      let peak = 0;
+      for (let c = 0; c < rendered.numberOfChannels; c++) {
+        const d = rendered.getChannelData(c);
+        for (let i = 0; i < d.length; i++) {
+          const a = Math.abs(d[i]);
+          if (a > peak) peak = a;
+        }
+      }
+      if (peak > 0) {
+        const target = opts.normalize === 'max' ? 1.0 : 0.891;
+        const gain = Math.min(target / peak, 10);
+        for (let c = 0; c < rendered.numberOfChannels; c++) {
+          const d = rendered.getChannelData(c);
+          for (let i = 0; i < d.length; i++) d[i] *= gain;
+        }
+      }
+    }
+
+    const isFloat = opts.bitDepth === '32f';
+    const bitDepthVal = isFloat ? 32 : parseInt(opts.bitDepth, 10);
+    return encodeWav(rendered, bitDepthVal, isFloat);
+  }
+
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) loadFile(file);
+  });
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) loadFile(fileInput.files[0]);
+  });
+
+  function setCover(file) {
+    if (!file) { coverBlob = null; coverPending = null; get('coverPreview').style.display = 'none'; return; }
+    if (!file.type && !/\.(jpe?g|png|gif|webp|bmp|tiff?)$/i.test(file.name)) {
+      showError('El archivo debe ser una imagen (JPG, PNG, etc.).');
+      return;
+    }
+    if (file.type && !file.type.startsWith('image/')) {
+      showError('El archivo debe ser una imagen (JPG, PNG, etc.).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      get('coverImg').src = e.target.result;
+      get('coverSize').textContent = 'Portada seleccionada (' + formatSize(file.size) + ')';
+      get('coverPreview').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+    coverBlob = null;
+    coverPending = file.arrayBuffer().then(buf => {
+      coverBlob = buf;
+      coverPending = null;
+    }).catch(() => {
+      coverBlob = null;
+      coverPending = null;
+      showError('No se pudo leer la portada.');
+      get('coverPreview').style.display = 'none';
+    });
+  }
+
+  get('coverBtn').addEventListener('click', () => get('coverInput').click());
+  get('coverBtn').addEventListener('dragover', e => {
+    e.preventDefault();
+    get('coverBtn').classList.add('dragover');
+  });
+  get('coverBtn').addEventListener('dragleave', () => get('coverBtn').classList.remove('dragover'));
+  get('coverBtn').addEventListener('drop', e => {
+    e.preventDefault();
+    get('coverBtn').classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) setCover(f);
+  });
+
+  get('removeCover').addEventListener('click', () => {
+    coverBlob = null;
+    coverPending = null;
+    get('coverInput').value = '';
+    get('coverImg').src = '';
+    get('coverPreview').style.display = 'none';
+  });
+
+  get('coverInput').addEventListener('change', () => setCover(get('coverInput').files[0]));
+
+  get('cancelBtn').addEventListener('click', () => {
+    form.style.display = 'none';
+    fileInfo.style.display = 'none';
+    dropZone.style.display = 'block';
+    currentFile = null;
+  });
+
+  function loadFile(file) {
+    if (!file.name.toLowerCase().endsWith('.mp3')) {
+      showError('Solo se admite formato MP3.');
+      return;
+    }
+    currentFile = file;
+
+    // Usamos el nombre del archivo como título sugerido por defecto
+    originalTags = { title: file.name.replace(/\.mp3$/i, '') };
+    originalSize = file.size;
+    setField('title', originalTags.title);
+    ['artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => setField(id, ''));
+    coverBlob = null;
+    coverPending = null;
+    get('coverPreview').style.display = 'none';
+    get('coverInput').value = '';
+    get('coverImg').src = '';
+
+    fileNameEl.textContent = file.name;
+    document.getElementById('fileSize').textContent = formatSize(originalSize);
+    currentTitle.textContent = originalTags.title;
+    fileInfo.style.display = 'block';
+
+    let tagReader;
+    if (window.jsmediatags) {
+      tagReader = jsmediatags.read;
+    } else {
+      showError('No se pudo cargar la librería lectora. Revisa tu conexión a internet.');
+      form.style.display = 'block';
+      return;
+    }
+
+    tagReader(file, {
+      onSuccess: function (data) {
+        const t = data.tags || {};
+        const map = {
+          title: 'title', artist: 'artist', album: 'album',
+          albumArtist: 'albumartist', year: 'year', track: 'track',
+          genre: 'genre', composer: 'composer', comment: 'comment'
+        };
+        for (const k in map) {
+          let v = t[map[k]];
+          if (map[k] === 'track' && v && v.no !== undefined) {
+            v = v.no + (v.total ? '/' + v.total : '');
+          }
+          if (v) setField(k, v);
+        }
+        currentTitle.textContent = t.title || originalTags.title;
+        if (t.picture) {
+          showSuccess('Metadatos leídos. Este MP3 tiene una portada: al guardar se reemplazará por la que elijas, o desaparecerá si no eliges ninguna.');
+        } else {
+          showSuccess('Metadatos leídos correctamente. Puedes editarlos.');
+        }
+      },
+      onError: function (e) {
+        // No hay tags previos: igual podemos editar
+        showSuccess('No se encontraron metadatos previos. Puedes escribirlos.');
+      }
+    });
+
+    form.style.display = 'block';
+    dropZone.style.display = 'none';
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!currentFile) return;
+
+    if (typeof ID3Writer === 'undefined') {
+      showError('No se pudo cargar la librería escritora. Revisa tu conexión a internet.');
+      return;
+    }
+
+    const intro = get('track').value.split('/');
+    const trackNo = parseInt(intro[0], 10);
+    const trackTotal = intro.length > 1 ? parseInt(intro[1], 10) : undefined;
+
+    try {
+      const outFormat = document.querySelector('input[name="outFormat"]:checked').value;
+
+      if (outFormat === 'wav') {
+        busy(true);
+        try {
+          const blob = await convertToWav(currentFile, {
+            sampleRate: parseInt(get('wavRate').value, 10),
+            channels: parseInt(get('wavCh').value, 10),
+            bitDepth: get('wavBits').value,
+            normalize: get('wavNorm').value
+          });
+          const base = (get('title').value.trim() || currentFile.name.replace(/\.mp3$/i, ''));
+          const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
+          const chLabel = get('wavCh').value === '1' ? 'mono' : 'stereo';
+          saveBlob(blob, base + '_' + get('wavRate').value + 'Hz_' + chLabel + '_' + bitsLabel + '.wav');
+          showSuccess('Convertido a WAV. Revisa tu carpeta de Descargas. Tamaño: ' + formatSize(blob.size));
+        } catch (err) {
+          console.error(err);
+          showError('No se pudo convertir a WAV. Si elegiste una frecuencia alta (192000 Hz), prueba con 96000 Hz o menor. Detalle: ' + err.message);
+        } finally {
+          busy(false);
+        }
+        return;
+      }
+
+      if (coverPending) await coverPending;
+      const raw = await currentFile.arrayBuffer();
+      const arrayBuffer = cleanAudio(raw);
+      const writer = new ID3Writer(arrayBuffer);
+      writer.padding = 0;
+
+      if (get('title').value) writer.setFrame('TIT2', get('title').value);
+      if (get('artist').value) writer.setFrame('TPE1', [get('artist').value]);
+      if (get('album').value) writer.setFrame('TALB', get('album').value);
+      if (get('albumArtist').value) writer.setFrame('TPE2', [get('albumArtist').value]);
+      if (get('year').value) writer.setFrame('TYER', get('year').value);
+      if (get('composer').value) writer.setFrame('TCOM', [get('composer').value]);
+      if (get('comment').value) writer.setFrame('COMM', get('comment').value);
+      if (!isNaN(get('track').value ? trackNo : NaN)) {
+        writer.setFrame('TRCK', trackTotal ? trackNo + '/' + trackTotal : trackNo);
+      }
+
+      if (coverBlob) {
+        writer.setFrame('APIC', {
+          type: 3,
+          data: coverBlob,
+          description: 'Portada'
+        });
+      }
+
+      writer.addTag();
+
+      const blob = writer.getBlob();
+      saveBlob(blob, (get('title').value.trim() || currentFile.name.replace(/\.mp3$/i, '')) + '.mp3');
+
+      showSuccess('Metadatos guardados' + (coverBlob ? ' con portada' : ' sin portada') + '. Revisa tu carpeta de Descargas. Tamaño: ' + formatSize(blob.size) + ' (original: ' + formatSize(originalSize) + ').');
+    } catch (err) {
+      console.error(err);
+      showError('Error al escribir los metadatos: ' + err.message);
+    }
+  });
+})();
+</script>
+</body>
+</html>
