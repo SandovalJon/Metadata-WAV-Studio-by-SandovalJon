@@ -1905,7 +1905,25 @@
       if (wav) updateWavNote();
     });
   });
-  ['wavBits', 'wavRate', 'wavCh'].forEach(id => get(id).addEventListener('change', updateWavNote));
+  ['wavBits', 'wavRate', 'wavCh', 'wavNorm'].forEach(id => {
+    get(id).addEventListener('change', () => {
+      updateWavNote();
+      save('wavPrefs', {
+        bits: get('wavBits').value,
+        rate: get('wavRate').value,
+        ch: get('wavCh').value,
+        norm: get('wavNorm').value
+      });
+    });
+  });
+
+  const wavPrefs = load('wavPrefs');
+  if (wavPrefs) {
+    if (wavPrefs.bits) get('wavBits').value = wavPrefs.bits;
+    if (wavPrefs.rate) get('wavRate').value = wavPrefs.rate;
+    if (wavPrefs.ch) get('wavCh').value = wavPrefs.ch;
+    if (wavPrefs.norm) get('wavNorm').value = wavPrefs.norm;
+  }
 
   function asciiBytes(str) {
     let s = '';
