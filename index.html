@@ -140,6 +140,39 @@
     color: var(--accent);
     transform: scale(1.02);
   }
+  .preset-bar {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .preset-bar select {
+    margin-bottom: 8px;
+  }
+  .preset-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .preset-actions input {
+    flex: 1;
+  }
+  .preset-btn {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    transition: filter .15s, transform .1s;
+  }
+  .preset-btn:hover { filter: brightness(1.1); }
+  .preset-btn:active { transform: scale(.95); }
+  .preset-btn-del {
+    background: var(--danger);
+  }
   .remove-cover {
     flex: 0 0 auto;
     padding: 6px 12px;
@@ -426,6 +459,18 @@
           </div>
 
           <p class="cover-note" id="wavNote"></p>
+
+          <div class="preset-bar">
+            <select id="presetSelect">
+              <option value="">— Configuraciones guardadas —</option>
+            </select>
+            <div class="preset-actions">
+              <input type="text" id="presetName" placeholder="Nombre del preset">
+              <button type="button" class="preset-btn" id="presetSave" data-i18n="btnPresetSave">Guardar</button>
+              <button type="button" class="preset-btn preset-btn-del" id="presetDelete" data-i18n="btnPresetDel">Eliminar</button>
+            </div>
+          </div>
+
           <p class="cover-note" data-i18n="wavMetaNote">Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
         </div>
       </div>
@@ -508,6 +553,8 @@
       btnCancelar: 'Cancelar',
       btnIniciar: 'Iniciar con Google',
       btnCerrar: 'Cerrar',
+      btnPresetSave: 'Guardar',
+      btnPresetDel: 'Eliminar',
       soloMp3: 'Solo se admite formato MP3.',
       libLectora: 'No se pudo cargar la librería lectora. Revisa tu conexión a internet.',
       libEscritora: 'No se pudo cargar la librería escritora. Revisa tu conexión a internet.',
@@ -557,6 +604,8 @@
       btnCancelar: 'Cancel',
       btnIniciar: 'Sign in with Google',
       btnCerrar: 'Sign out',
+      btnPresetSave: 'Save',
+      btnPresetDel: 'Delete',
       soloMp3: 'Only MP3 format is supported.',
       libLectora: 'Could not load the reader library. Check your internet connection.',
       libEscritora: 'Could not load the writer library. Check your internet connection.',
@@ -606,6 +655,8 @@
       btnCancelar: 'Cancelar',
       btnIniciar: 'Entrar com Google',
       btnCerrar: 'Sair',
+      btnPresetSave: 'Salvar',
+      btnPresetDel: 'Excluir',
       soloMp3: 'Somente o formato MP3 é aceito.',
       libLectora: 'Não foi possível carregar a biblioteca leitora. Verifique sua conexão com a internet.',
       libEscritora: 'Não foi possível carregar a biblioteca escritora. Verifique sua conexão com a internet.',
@@ -1924,6 +1975,67 @@
     if (wavPrefs.ch) get('wavCh').value = wavPrefs.ch;
     if (wavPrefs.norm) get('wavNorm').value = wavPrefs.norm;
   }
+
+  // ===== PRESETS =====
+  function getPresets() { return load('wavPresets', {}); }
+  function savePresets(p) { save('wavPresets', p); }
+
+  function refreshPresetList() {
+    const sel = get('presetSelect');
+    const presets = getPresets();
+    sel.innerHTML = '<option value="">— Configuraciones guardadas —</option>';
+    Object.keys(presets).sort().forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  }
+
+  function loadPreset(name) {
+    const presets = getPresets();
+    if (!presets[name]) return;
+    const p = presets[name];
+    if (p.bits) get('wavBits').value = p.bits;
+    if (p.rate) get('wavRate').value = p.rate;
+    if (p.ch) get('wavCh').value = p.ch;
+    if (p.norm) get('wavNorm').value = p.norm;
+    updateWavNote();
+  }
+
+  get('presetSave').addEventListener('click', () => {
+    const name = get('presetName').value.trim();
+    if (!name) { showError(currentLang === 'es' ? 'Escribe un nombre para el preset.' : 'Enter a preset name.'); return; }
+    const presets = getPresets();
+    presets[name] = {
+      bits: get('wavBits').value,
+      rate: get('wavRate').value,
+      ch: get('wavCh').value,
+      norm: get('wavNorm').value
+    };
+    savePresets(presets);
+    get('presetName').value = '';
+    refreshPresetList();
+    get('presetSelect').value = name;
+    showSuccess(currentLang === 'es' ? 'Preset "' + name + '" guardado.' : 'Preset "' + name + '" saved.');
+  });
+
+  get('presetSelect').addEventListener('change', e => {
+    if (e.target.value) loadPreset(e.target.value);
+  });
+
+  get('presetDelete').addEventListener('click', () => {
+    const name = get('presetSelect').value;
+    if (!name) { showError(currentLang === 'es' ? 'Selecciona un preset para eliminar.' : 'Select a preset to delete.'); return; }
+    const presets = getPresets();
+    delete presets[name];
+    savePresets(presets);
+    refreshPresetList();
+    showSuccess(currentLang === 'es' ? 'Preset "' + name + '" eliminado.' : 'Preset "' + name + '" deleted.');
+  });
+
+  refreshPresetList();
+  // ===== END PRESETS =====
 
   function asciiBytes(str) {
     let s = '';
