@@ -6,18 +6,13 @@
 <title>Metadata & WAV Studio</title>
 <style>
   :root {
-    --bg: #121212;
-    --card: #1e1e1e;
-    --border: #333;
-    --text: #e0e0e0;
-    --muted: #9a9a9a;
-    --accent: #4caf50;
-    --danger: #e53935;
-  }
-  body[data-theme="noche"] {
-    --bg: #0d1117; --card: #161b22;
-    --text: #e6edf3; --muted: #8b949e; --border: #30363d;
-    --accent: #58a6ff; --danger: #f85149;
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --danger: #f85149;
   }
   body[data-theme="esmeralda"] {
     --bg: #0a1f1a; --card: #0f2d25;
@@ -238,7 +233,6 @@
   <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
   <div class="lang-bar">
     <select id="themeSelect">
-      <option value="default" data-i18n="temaOscuro">Oscuro</option>
       <option value="noche" data-i18n="temaNoche">Noche</option>
       <option value="esmeralda" data-i18n="temaEsmeralda">Esmeralda</option>
       <option value="atardecer" data-i18n="temaAtardecer">Atardecer</option>
@@ -1691,7 +1685,7 @@
 
   // ===== THEME =====
   function setTheme(theme) {
-    if (theme === 'default') {
+    if (theme === 'noche') {
       document.body.removeAttribute('data-theme');
     } else {
       document.body.setAttribute('data-theme', theme);
@@ -1700,7 +1694,7 @@
     document.getElementById('themeSelect').value = theme;
   }
 
-  const savedTheme = load('theme', 'default');
+  const savedTheme = load('theme', 'noche');
   setTheme(savedTheme);
 
   document.getElementById('themeSelect').addEventListener('change', e => setTheme(e.target.value));
