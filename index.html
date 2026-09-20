@@ -425,17 +425,17 @@
             <div>
               <label for="wavBits" data-i18n="labelBits">Profundidad de bits</label>
               <select id="wavBits">
+                <option value="8" selected>8 bits</option>
                 <option value="16">16 bits (CD)</option>
                 <option value="24">24 bits</option>
                 <option value="32">32 bits (entero)</option>
                 <option value="32f">32 bits (flotante)</option>
-                <option value="8">8 bits</option>
               </select>
             </div>
             <div>
               <label for="wavRate" data-i18n="labelFrecuencia">Frecuencia de muestreo</label>
               <select id="wavRate">
-                <option value="8000">8000 Hz</option>
+                <option value="8000" selected>8000 Hz</option>
                 <option value="11025">11025 Hz</option>
                 <option value="16000">16000 Hz</option>
                 <option value="22050">22050 Hz</option>
@@ -453,15 +453,15 @@
             <div>
               <label for="wavCh" data-i18n="labelCanales">Canales</label>
               <select id="wavCh">
-                <option value="2" selected>Estéreo</option>
-                <option value="1">Mono</option>
+                <option value="1" selected>Mono</option>
+                <option value="2">Estéreo</option>
               </select>
             </div>
             <div>
               <label for="wavNorm" data-i18n="labelNormalizar">Normalizar</label>
               <select id="wavNorm">
-                <option value="auto" selected>Automático (-1 dB)</option>
-                <option value="none">Sin normalizar</option>
+                <option value="none" selected>Sin normalizar</option>
+                <option value="auto">Automático (-1 dB)</option>
                 <option value="max">Máximo (0 dB)</option>
               </select>
             </div>
@@ -1968,22 +1968,8 @@
   ['wavBits', 'wavRate', 'wavCh', 'wavNorm'].forEach(id => {
     get(id).addEventListener('change', () => {
       updateWavNote();
-      save('wavPrefs', {
-        bits: get('wavBits').value,
-        rate: get('wavRate').value,
-        ch: get('wavCh').value,
-        norm: get('wavNorm').value
-      });
     });
   });
-
-  const wavPrefs = load('wavPrefs');
-  if (wavPrefs) {
-    if (wavPrefs.bits) get('wavBits').value = wavPrefs.bits;
-    if (wavPrefs.rate) get('wavRate').value = wavPrefs.rate;
-    if (wavPrefs.ch) get('wavCh').value = wavPrefs.ch;
-    if (wavPrefs.norm) get('wavNorm').value = wavPrefs.norm;
-  }
 
   // ===== PRESETS =====
   function getPresets() { return load('wavPresets', {}); }
