@@ -173,6 +173,20 @@
   .preset-btn-del {
     background: var(--danger);
   }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 16px 4px; }
+    header h1 { font-size: 1.3rem; }
+    main { padding: 12px 16px 80px; }
+    .row { flex-direction: column; gap: 0; }
+    .actions { flex-direction: column; }
+    .preset-actions { flex-direction: column; }
+    .preset-actions input { width: 100%; }
+    .preset-btn { width: 100%; }
+    .toast { left: 16px; right: 16px; max-width: none; }
+    .drop-zone { padding: 30px 16px; }
+    .lang-bar { flex-wrap: wrap; }
+  }
   .remove-cover {
     flex: 0 0 auto;
     padding: 6px 12px;
