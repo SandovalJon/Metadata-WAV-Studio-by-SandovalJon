@@ -33,17 +33,17 @@
     min-height: 100vh;
   }
   header {
-    padding: 24px 24px 8px;
+    padding: clamp(12px, 4vw, 24px) clamp(12px, 4vw, 24px) 8px;
     text-align: center;
   }
-  header h1 { margin: 0; font-size: 1.6rem; }
-  header p { color: var(--muted); margin: 6px 0 0; font-size: .9rem; }
-  main { max-width: 720px; margin: 0 auto; padding: 16px 24px 80px; }
+  header h1 { margin: 0; font-size: clamp(1.2rem, 4vw, 1.6rem); }
+  header p { color: var(--muted); margin: 6px 0 0; font-size: clamp(.8rem, 2.5vw, .9rem); }
+  main { max-width: 720px; margin: 0 auto; padding: clamp(10px, 3vw, 16px) clamp(12px, 4vw, 24px) 80px; }
 
   .drop-zone {
     border: 2px dashed var(--border);
     border-radius: 12px;
-    padding: 40px 20px;
+    padding: clamp(24px, 6vw, 40px) clamp(12px, 4vw, 20px);
     text-align: center;
     color: var(--muted);
     cursor: pointer;
@@ -79,7 +79,7 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px;
+    padding: clamp(14px, 4vw, 20px);
     animation: fadeSlideIn .3s ease;
   }
   form fieldset { border: none; padding: 0; margin: 0; }
@@ -96,7 +96,7 @@
   }
   input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
   input[type="file"] { display: none; }
-  .row { display: flex; gap: 12px; }
+  .row { display: flex; gap: clamp(8px, 2vw, 12px); }
   .row > div { flex: 1; }
 
   .preview {
@@ -175,17 +175,11 @@
   }
 
   @media (max-width: 600px) {
-    header { padding: 16px 16px 4px; }
-    header h1 { font-size: 1.3rem; }
-    main { padding: 12px 16px 80px; }
     .row { flex-direction: column; gap: 0; }
     .actions { flex-direction: column; }
     .preset-actions { flex-direction: column; }
     .preset-actions input { width: 100%; }
     .preset-btn { width: 100%; }
-    .toast { left: 16px; right: 16px; max-width: none; }
-    .drop-zone { padding: 30px 16px; }
-    .lang-bar { flex-wrap: wrap; }
   }
   .remove-cover {
     flex: 0 0 auto;
@@ -251,7 +245,7 @@
 
   footer { text-align: center; color: #484f58; font-size: .85rem; padding: 20px; position: fixed; bottom: 20px; width: 100%; background: var(--bg); }
 
-  .lang-bar { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 8px 24px 0; }
+  .lang-bar { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 8px clamp(8px, 3vw, 24px) 0; flex-wrap: wrap; }
   #themeSelect, #langSelect {
     background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
     color: var(--text); font-size: .85rem; padding: 6px 12px; cursor: pointer;
@@ -259,7 +253,7 @@
   }
   #themeSelect:focus, #langSelect:focus { outline: none; border-color: var(--accent); }
 
-  .auth-bar { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 8px 24px 0; }
+  .auth-bar { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 8px clamp(8px, 3vw, 24px) 0; }
   .auth-btn {
     background: none; border: 1px solid var(--border); border-radius: 6px;
     color: var(--muted); font-size: .8rem; padding: 4px 12px; cursor: pointer;
@@ -273,7 +267,8 @@
   .toast {
     position: fixed;
     top: 16px;
-    right: 16px;
+    right: clamp(8px, 3vw, 16px);
+    left: clamp(8px, 3vw, 16px);
     padding: 12px 20px;
     border-radius: 8px;
     font-size: .9rem;
