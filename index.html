@@ -1647,7 +1647,7 @@
     }
   };
 
-  let currentLang = load('lang') || detectLang();
+  let currentLang = detectLang();
 
   function detectLang() {
     const nav = navigator.language.slice(0, 2);
@@ -1657,7 +1657,6 @@
   function setLanguage(lang) {
     if (!T[lang]) return;
     currentLang = lang;
-    save('lang', lang);
     document.getElementById('langSelect').value = lang;
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
