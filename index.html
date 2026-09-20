@@ -14,6 +14,21 @@
     --accent: #4caf50;
     --danger: #e53935;
   }
+  body[data-theme="noche"] {
+    --bg: #0d1117; --card: #161b22;
+    --text: #e6edf3; --muted: #8b949e; --border: #30363d;
+    --accent: #58a6ff; --danger: #f85149;
+  }
+  body[data-theme="esmeralda"] {
+    --bg: #0a1f1a; --card: #0f2d25;
+    --text: #c8e6d8; --muted: #7ab89a; --border: #1a3a2a;
+    --accent: #3fb950; --danger: #f85149;
+  }
+  body[data-theme="atardecer"] {
+    --bg: #1a0f0a; --card: #2a1a12;
+    --text: #f0ddd0; --muted: #c09a80; --border: #3d2a1a;
+    --accent: #ff8c42; --danger: #f85149;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -187,13 +202,13 @@
 
   footer { text-align: center; color: #484f58; font-size: .85rem; padding: 20px; position: fixed; bottom: 20px; width: 100%; background: var(--bg); }
 
-  .lang-bar { display: flex; justify-content: center; padding: 8px 24px 0; }
-  #langSelect {
+  .lang-bar { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 8px 24px 0; }
+  #themeSelect, #langSelect {
     background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
     color: var(--text); font-size: .85rem; padding: 6px 12px; cursor: pointer;
     transition: border-color .2s; width: auto; min-width: 0;
   }
-  #langSelect:focus { outline: none; border-color: var(--accent); }
+  #themeSelect:focus, #langSelect:focus { outline: none; border-color: var(--accent); }
 
   .auth-bar { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 8px 24px 0; }
   .auth-btn {
@@ -222,6 +237,12 @@
   </div>
   <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
   <div class="lang-bar">
+    <select id="themeSelect">
+      <option value="default" data-i18n="temaOscuro">Oscuro</option>
+      <option value="noche" data-i18n="temaNoche">Noche</option>
+      <option value="esmeralda" data-i18n="temaEsmeralda">Esmeralda</option>
+      <option value="atardecer" data-i18n="temaAtardecer">Atardecer</option>
+    </select>
     <select id="langSelect">
       <option value="en">English</option>
       <option value="es">Español</option>
@@ -1667,6 +1688,23 @@
   document.getElementById('langSelect').addEventListener('change', e => setLanguage(e.target.value));
 
   setLanguage(currentLang);
+
+  // ===== THEME =====
+  function setTheme(theme) {
+    if (theme === 'default') {
+      document.body.removeAttribute('data-theme');
+    } else {
+      document.body.setAttribute('data-theme', theme);
+    }
+    save('theme', theme);
+    document.getElementById('themeSelect').value = theme;
+  }
+
+  const savedTheme = load('theme', 'default');
+  setTheme(savedTheme);
+
+  document.getElementById('themeSelect').addEventListener('change', e => setTheme(e.target.value));
+  // ===== END THEME =====
 
   // ===== FIREBASE AUTH =====
   // Reemplaza esta config con la de tu proyecto Firebase
