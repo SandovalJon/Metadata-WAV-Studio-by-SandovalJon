@@ -316,7 +316,7 @@
       <button class="auth-btn" data-i18n="btnCerrar" onclick="doLogout()">Cerrar</button>
     </div>
   </div>
-  <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte MP3 a WAV.</p>
+  <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte entre MP3 y WAV.</p>
   <div class="lang-bar">
     <select id="themeSelect">
       <option value="noche">Noche</option>
@@ -355,9 +355,9 @@
 
 <main>
   <div class="drop-zone" id="dropZone">
-    <input type="file" id="fileInput" accept=".mp3,audio/mpeg">
-    <strong data-i18n="arrastra">Arrastra tu MP3 aquí</strong>
-    <small data-i18n="oclic">o haz clic para seleccionar un archivo</small>
+    <input type="file" id="fileInput" accept=".mp3,audio/mpeg,.wav,audio/wav" multiple>
+    <strong data-i18n="arrastra">Arrastra tu archivo de audio aquí</strong>
+    <small data-i18n="oclic">o haz clic para seleccionar archivos (MP3/WAV)</small>
   </div>
 
   <div id="fileInfo"><strong data-i18n="archivo">Archivo:</strong> <span id="fileName"></span><br><strong data-i18n="tamano">Tamaño:</strong> <span id="fileSize"></span><br><strong data-i18n="tituloActual">Título actual:</strong> <span id="currentTitle"></span></div>
@@ -522,6 +522,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -554,9 +555,9 @@
 
   const T = {
     es: {
-      subtitulo: 'Edita metadatos, cambia portadas y convierte MP3 a WAV.',
-      arrastra: 'Arrastra tu MP3 aquí',
-      oclic: 'o haz clic para seleccionar un archivo',
+      subtitulo: 'Edita metadatos, cambia portadas y convierte entre MP3 y WAV.',
+      arrastra: 'Arrastra tu archivo de audio aquí',
+      oclic: 'o haz clic para seleccionar archivos (MP3/WAV)',
       archivo: 'Archivo:',
       tamano: 'Tamaño:',
       tituloActual: 'Título actual:',
@@ -590,7 +591,7 @@
       btnPresetSave: 'Guardar',
       btnPresetReset: 'Reset',
       btnPresetDel: 'Eliminar',
-      soloMp3: 'Solo se admite formato MP3.',
+      soloMp3: 'Solo se admiten formatos MP3 y WAV.',
       libLectora: 'No se pudo cargar la librería lectora. Revisa tu conexión a internet.',
       libEscritora: 'No se pudo cargar la librería escritora. Revisa tu conexión a internet.',
       imagenError: 'El archivo debe ser una imagen (JPG, PNG, etc.).',
@@ -608,9 +609,9 @@
       errorMeta: 'Error al escribir los metadatos: '
     },
     en: {
-      subtitulo: 'Edit metadata, change covers and convert MP3 to WAV.',
-      arrastra: 'Drag your MP3 here',
-      oclic: 'or click to select a file',
+      subtitulo: 'Edit metadata, change covers and convert between MP3 and WAV.',
+      arrastra: 'Drag your audio file here',
+      oclic: 'or click to select files (MP3/WAV)',
       archivo: 'File:',
       tamano: 'Size:',
       tituloActual: 'Current title:',
@@ -643,7 +644,7 @@
       btnCerrar: 'Sign out',
       btnPresetSave: 'Save',
       btnPresetDel: 'Delete',
-      soloMp3: 'Only MP3 format is supported.',
+      soloMp3: 'Only MP3 and WAV formats are supported.',
       libLectora: 'Could not load the reader library. Check your internet connection.',
       libEscritora: 'Could not load the writer library. Check your internet connection.',
       imagenError: 'The file must be an image (JPG, PNG, etc.).',
@@ -661,9 +662,9 @@
       errorMeta: 'Error writing metadata: '
     },
     pt: {
-      subtitulo: 'Edite metadatos, troque capas e converta MP3 para WAV.',
-      arrastra: 'Arraste seu MP3 aqui',
-      oclic: 'ou clique para selecionar um arquivo',
+      subtitulo: 'Edite metadatos, troque capas e converta entre MP3 e WAV.',
+      arrastra: 'Arraste seu arquivo de áudio aqui',
+      oclic: 'ou clique para selecionar arquivos (MP3/WAV)',
       arquivo: 'Arquivo:',
       tamano: 'Tamanho:',
       tituloActual: 'Título atual:',
@@ -696,7 +697,7 @@
       btnCerrar: 'Sair',
       btnPresetSave: 'Salvar',
       btnPresetDel: 'Excluir',
-      soloMp3: 'Somente o formato MP3 é aceito.',
+      soloMp3: 'Somente os formatos MP3 e WAV são aceitos.',
       libLectora: 'Não foi possível carregar a biblioteca leitora. Verifique sua conexão com a internet.',
       libEscritora: 'Não foi possível carregar a biblioteca escritora. Verifique sua conexão com a internet.',
       imagenError: 'O arquivo deve ser uma imagem (JPG, PNG, etc.).',
@@ -1905,6 +1906,7 @@
   let coverBlob = null;
   let coverPending = null;
   let originalSize = 0;
+  let batchFiles = [];
 
   const get = id => document.getElementById(id);
 
@@ -1945,6 +1947,80 @@
     }
     return b.buffer;
   }
+
+  function readWavMetadata(arrayBuffer) {
+    const u = new Uint8Array(arrayBuffer);
+    const tags = {};
+    if (u.length < 12) return tags;
+    const ascii = (o, n) => { let s = ''; for (let i = 0; i < n; i++) s += String.fromCharCode(u[o + i]); return s; };
+    if (ascii(0, 4) !== 'RIFF' || ascii(8, 4) !== 'WAVE') return tags;
+    let pos = 12;
+    while (pos + 8 <= u.length) {
+      const id = ascii(pos, 4);
+      const size = u[pos + 4] | (u[pos + 5] << 8) | (u[pos + 6] << 16) | (u[pos + 7] << 24);
+      if (id === 'LIST' && pos + 12 <= u.length) {
+        const listType = ascii(pos + 8, 4);
+        if (listType === 'INFO') {
+          let p = pos + 12;
+          const end = pos + 8 + size;
+          while (p + 8 <= end && p + 8 <= u.length) {
+            const chunkId = ascii(p, 4);
+            const chunkSize = u[p + 4] | (u[p + 5] << 8) | (u[p + 6] << 16) | (u[p + 7] << 24);
+            const val = ascii(p + 8, chunkSize).replace(/\0+$/, '');
+            const map = { INAM: 'title', IART: 'artist', IPRD: 'album', ICRD: 'year', ITRK: 'track', IGNR: 'genre', ICMT: 'comment', ISFT: 'composer' };
+            if (map[chunkId]) tags[map[chunkId]] = val;
+            p += 8 + chunkSize + (chunkSize % 2);
+          }
+        }
+      }
+      pos += 8 + size + (size % 2);
+      if (size < 0 || pos > u.length) break;
+    }
+    return tags;
+  }
+
+  function convertWavToMp3(arrayBuffer, opts) {
+    return new Promise((resolve, reject) => {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioContextCtor();
+      ctx.decodeAudioData(arrayBuffer).then(audio => {
+        ctx.close();
+        const numCh = opts.channels || audio.numberOfChannels;
+        const sampleRate = opts.sampleRate || audio.sampleRate;
+        const length = audio.length;
+        const mp3enc = new lamejs.Mp3Encoder(numCh, sampleRate, opts.bitrate || 192);
+        const blockSize = 1152;
+        const mp3Data = [];
+        const channels = [];
+        for (let c = 0; c < numCh; c++) {
+          const src = audio.getChannelData(c % audio.numberOfChannels);
+          channels.push(numCh === 1 ? src : src);
+        }
+        for (let i = 0; i < length; i += blockSize) {
+          const left = new Int16Array(blockSize);
+          const right = new Int16Array(blockSize);
+          for (let j = 0; j < blockSize; j++) {
+            const idx = i + j;
+            if (idx < length) {
+              let sL = Math.max(-1, Math.min(1, channels[0][idx]));
+              left[j] = sL < 0 ? sL * 0x8000 : sL * 0x7FFF;
+              if (numCh > 1) {
+                let sR = Math.max(-1, Math.min(1, channels[1][idx]));
+                right[j] = sR < 0 ? sR * 0x8000 : sR * 0x7FFF;
+              }
+            }
+          }
+          const mp3buf = numCh > 1 ? mp3enc.encodeBuffer(left, right) : mp3enc.encodeBuffer(left);
+          if (mp3buf.length > 0) mp3Data.push(mp3buf);
+        }
+        const end = mp3enc.flush();
+        if (end.length > 0) mp3Data.push(end);
+        resolve(new Blob(mp3Data, { type: 'audio/mp3' }));
+      }).catch(reject);
+    });
+  }
+
+  let currentFileType = 'mp3';
 
   function showToast(msg, type) {
     const toast = document.createElement('div');
@@ -2268,12 +2344,29 @@
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file) loadFile(file);
+    const files = Array.from(e.dataTransfer.files);
+    const audioFiles = files.filter(f => /\.(mp3|wav)$/i.test(f.name));
+    if (audioFiles.length === 0) return;
+    if (audioFiles.length === 1) {
+      loadFile(audioFiles[0]);
+    } else {
+      batchFiles = audioFiles;
+      loadFile(audioFiles[0]);
+      showSuccess(audioFiles.length + (currentLang === 'es' ? ' archivos en cola. Se procesarán al guardar.' : ' files queued. They will process on save.'));
+    }
   });
   dropZone.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) loadFile(fileInput.files[0]);
+    const files = Array.from(fileInput.files);
+    const audioFiles = files.filter(f => /\.(mp3|wav)$/i.test(f.name));
+    if (audioFiles.length === 0) return;
+    if (audioFiles.length === 1) {
+      loadFile(audioFiles[0]);
+    } else {
+      batchFiles = audioFiles;
+      loadFile(audioFiles[0]);
+      showSuccess(audioFiles.length + (currentLang === 'es' ? ' archivos en cola. Se procesarán al guardar.' : ' files queued. They will process on save.'));
+    }
   });
 
   function setCover(file) {
@@ -2333,6 +2426,7 @@
     fileInfo.style.display = 'none';
     dropZone.style.display = 'block';
     currentFile = null;
+    batchFiles = [];
   });
 
   document.addEventListener('keydown', e => {
@@ -2342,16 +2436,19 @@
   });
 
   function loadFile(file) {
-    if (!file.name.toLowerCase().endsWith('.mp3')) {
+    const isWav = file.name.toLowerCase().endsWith('.wav');
+    const isMp3 = file.name.toLowerCase().endsWith('.mp3');
+    if (!isWav && !isMp3) {
       showError(T[currentLang].soloMp3);
       return;
     }
     currentFile = file;
+    currentFileType = isWav ? 'wav' : 'mp3';
 
-    // Usamos el nombre del archivo como título sugerido por defecto
-    originalTags = { title: file.name.replace(/\.mp3$/i, '') };
+    const baseName = file.name.replace(/\.(mp3|wav)$/i, '');
+    originalTags = { title: baseName };
     originalSize = file.size;
-    setField('title', originalTags.title);
+    setField('title', baseName);
     ['artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => setField(id, ''));
     coverBlob = null;
     coverPending = null;
@@ -2361,54 +2458,128 @@
 
     fileNameEl.textContent = file.name;
     document.getElementById('fileSize').textContent = formatSize(originalSize);
-    currentTitle.textContent = originalTags.title;
+    currentTitle.textContent = baseName;
     fileInfo.style.display = 'block';
 
-    let tagReader;
-    if (window.jsmediatags) {
-      tagReader = jsmediatags.read;
+    if (isWav) {
+      file.arrayBuffer().then(buf => {
+        const tags = readWavMetadata(buf);
+        for (const k in tags) {
+          if (tags[k]) setField(k, tags[k]);
+        }
+        if (tags.title) currentTitle.textContent = tags.title;
+        showSuccess(T[currentLang].metadatosLeidos);
+        updateFormatOptions(true);
+      });
     } else {
-      showError(T[currentLang].libLectora);
-      form.style.display = 'block';
-      return;
-    }
-
-    tagReader(file, {
-      onSuccess: function (data) {
-        const t = data.tags || {};
-        const map = {
-          title: 'title', artist: 'artist', album: 'album',
-          albumArtist: 'albumartist', year: 'year', track: 'track',
-          genre: 'genre', composer: 'composer', comment: 'comment'
-        };
-        for (const k in map) {
-          let v = t[map[k]];
-          if (map[k] === 'track' && v && v.no !== undefined) {
-            v = v.no + (v.total ? '/' + v.total : '');
-          }
-          if (v) setField(k, v);
-        }
-        currentTitle.textContent = t.title || originalTags.title;
-        if (t.picture) {
-          showSuccess(T[currentLang].portadaLeida);
-        } else {
-          showSuccess(T[currentLang].metadatosLeidos);
-        }
-      },
-      onError: function (e) {
-        // No hay tags previos: igual podemos editar
-        showSuccess(T[currentLang].sinMetadatos);
+      let tagReader;
+      if (window.jsmediatags) {
+        tagReader = jsmediatags.read;
+      } else {
+        showError(T[currentLang].libLectora);
+        form.style.display = 'block';
+        updateFormatOptions(false);
+        return;
       }
-    });
+      tagReader(file, {
+        onSuccess: function (data) {
+          const t = data.tags || {};
+          const map = {
+            title: 'title', artist: 'artist', album: 'album',
+            albumArtist: 'albumartist', year: 'year', track: 'track',
+            genre: 'genre', composer: 'composer', comment: 'comment'
+          };
+          for (const k in map) {
+            let v = t[map[k]];
+            if (map[k] === 'track' && v && v.no !== undefined) {
+              v = v.no + (v.total ? '/' + v.total : '');
+            }
+            if (v) setField(k, v);
+          }
+          currentTitle.textContent = t.title || originalTags.title;
+          if (t.picture) {
+            showSuccess(T[currentLang].portadaLeida);
+          } else {
+            showSuccess(T[currentLang].metadatosLeidos);
+          }
+          updateFormatOptions(false);
+        },
+        onError: function (e) {
+          showSuccess(T[currentLang].sinMetadatos);
+          updateFormatOptions(false);
+        }
+      });
+    }
 
     form.style.display = 'block';
     dropZone.style.display = 'none';
     setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   }
 
+  function updateFormatOptions(isWavInput) {
+    const mp3Label = document.querySelector('label[for="outFormat"] span[data-i18n="mp3Solo"]');
+    if (isWavInput) {
+      mp3Label.textContent = 'MP3 (convertir audio)';
+    }
+  }
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     if (!currentFile) return;
+
+    const outFormat = document.querySelector('input[name="outFormat"]:checked').value;
+    const isWavInput = currentFileType === 'wav';
+    const allFiles = batchFiles.length > 0 ? batchFiles : [currentFile];
+
+    if (isWavInput && outFormat === 'mp3') {
+      busy(true);
+      try {
+        for (let fi = 0; fi < allFiles.length; fi++) {
+          const f = allFiles[fi];
+          const buf = await f.arrayBuffer();
+          const blob = await convertWavToMp3(buf, { sampleRate: 44100, channels: 2, bitrate: 192 });
+          const base = get('title').value.trim() || f.name.replace(/\.wav$/i, '');
+          saveBlob(blob, base + '.mp3');
+          showSuccess(T[currentLang].wavExito + formatSize(blob.size));
+        }
+      } catch (err) {
+        console.error(err);
+        showError(T[currentLang].wavError + err.message);
+      } finally {
+        busy(false);
+        batchFiles = [];
+      }
+      return;
+    }
+
+    if (outFormat === 'wav') {
+      busy(true);
+      try {
+        for (let fi = 0; fi < allFiles.length; fi++) {
+          const f = allFiles[fi];
+          const blob = await convertToWav(f, {
+            sampleRate: parseInt(get('wavRate').value, 10),
+            channels: parseInt(get('wavCh').value, 10),
+            bitDepth: get('wavBits').value,
+            normalize: get('wavNorm').value,
+            dither: get('wavDither').value,
+            resample: get('wavResample').value
+          });
+          const base = (get('title').value.trim() || f.name.replace(/\.(mp3|wav)$/i, ''));
+          const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
+          const chLabel = get('wavCh').value === '1' ? 'mono' : 'stereo';
+          saveBlob(blob, base + '_' + get('wavRate').value + 'Hz_' + chLabel + '_' + bitsLabel + '.wav');
+        }
+        showSuccess(T[currentLang].wavExito + formatSize((await allFiles[0].arrayBuffer()).byteLength));
+      } catch (err) {
+        console.error(err);
+        showError(T[currentLang].wavError + err.message);
+      } finally {
+        busy(false);
+        batchFiles = [];
+      }
+      return;
+    }
 
     if (typeof ID3Writer === 'undefined') {
       showError(T[currentLang].libEscritora);
@@ -2420,67 +2591,43 @@
     const trackTotal = intro.length > 1 ? parseInt(intro[1], 10) : undefined;
 
     try {
-      const outFormat = document.querySelector('input[name="outFormat"]:checked').value;
+      for (let fi = 0; fi < allFiles.length; fi++) {
+        const f = allFiles[fi];
+        if (coverPending) await coverPending;
+        const raw = await f.arrayBuffer();
+        const arrayBuffer = f.name.toLowerCase().endsWith('.wav') ? raw : cleanAudio(raw);
+        const writer = new ID3Writer(arrayBuffer);
+        writer.padding = 0;
 
-      if (outFormat === 'wav') {
-        busy(true);
-        try {
-          const blob = await convertToWav(currentFile, {
-            sampleRate: parseInt(get('wavRate').value, 10),
-            channels: parseInt(get('wavCh').value, 10),
-            bitDepth: get('wavBits').value,
-            normalize: get('wavNorm').value,
-            dither: get('wavDither').value,
-            resample: get('wavResample').value
-          });
-          const base = (get('title').value.trim() || currentFile.name.replace(/\.mp3$/i, ''));
-          const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
-          const chLabel = get('wavCh').value === '1' ? 'mono' : 'stereo';
-          saveBlob(blob, base + '_' + get('wavRate').value + 'Hz_' + chLabel + '_' + bitsLabel + '.wav');
-          showSuccess(T[currentLang].wavExito + formatSize(blob.size));
-        } catch (err) {
-          console.error(err);
-          showError(T[currentLang].wavError + err.message);
-        } finally {
-          busy(false);
+        if (get('title').value) writer.setFrame('TIT2', get('title').value);
+        if (get('artist').value) writer.setFrame('TPE1', [get('artist').value]);
+        if (get('album').value) writer.setFrame('TALB', get('album').value);
+        if (get('albumArtist').value) writer.setFrame('TPE2', [get('albumArtist').value]);
+        if (get('year').value) writer.setFrame('TYER', get('year').value);
+        if (get('composer').value) writer.setFrame('TCOM', [get('composer').value]);
+        if (get('comment').value) writer.setFrame('COMM', get('comment').value);
+        if (!isNaN(get('track').value ? trackNo : NaN)) {
+          writer.setFrame('TRCK', trackTotal ? trackNo + '/' + trackTotal : trackNo);
         }
-        return;
+
+        if (coverBlob) {
+          writer.setFrame('APIC', {
+            type: 3,
+            data: coverBlob,
+            description: 'Portada'
+          });
+        }
+
+        writer.addTag();
+        const blob = writer.getBlob();
+        saveBlob(blob, (get('title').value.trim() || f.name.replace(/\.(mp3|wav)$/i, '')) + '.mp3');
       }
-
-      if (coverPending) await coverPending;
-      const raw = await currentFile.arrayBuffer();
-      const arrayBuffer = cleanAudio(raw);
-      const writer = new ID3Writer(arrayBuffer);
-      writer.padding = 0;
-
-      if (get('title').value) writer.setFrame('TIT2', get('title').value);
-      if (get('artist').value) writer.setFrame('TPE1', [get('artist').value]);
-      if (get('album').value) writer.setFrame('TALB', get('album').value);
-      if (get('albumArtist').value) writer.setFrame('TPE2', [get('albumArtist').value]);
-      if (get('year').value) writer.setFrame('TYER', get('year').value);
-      if (get('composer').value) writer.setFrame('TCOM', [get('composer').value]);
-      if (get('comment').value) writer.setFrame('COMM', get('comment').value);
-      if (!isNaN(get('track').value ? trackNo : NaN)) {
-        writer.setFrame('TRCK', trackTotal ? trackNo + '/' + trackTotal : trackNo);
-      }
-
-      if (coverBlob) {
-        writer.setFrame('APIC', {
-          type: 3,
-          data: coverBlob,
-          description: 'Portada'
-        });
-      }
-
-      writer.addTag();
-
-      const blob = writer.getBlob();
-      saveBlob(blob, (get('title').value.trim() || currentFile.name.replace(/\.mp3$/i, '')) + '.mp3');
-
-      showSuccess(T[currentLang].metaGuardados + (coverBlob ? T[currentLang].conPortada : T[currentLang].sinPortada) + T[currentLang].descarga + formatSize(blob.size) + T[currentLang].original + formatSize(originalSize) + ').');
+      showSuccess(T[currentLang].metaGuardados + (coverBlob ? T[currentLang].conPortada : T[currentLang].sinPortada) + T[currentLang].descarga + formatSize(originalSize));
     } catch (err) {
       console.error(err);
       showError(T[currentLang].errorMeta + err.message);
+    } finally {
+      batchFiles = [];
     }
   });
 })();
