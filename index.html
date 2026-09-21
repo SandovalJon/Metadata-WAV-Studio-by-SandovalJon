@@ -470,6 +470,25 @@
             </div>
           </div>
 
+          <div class="row">
+            <div>
+              <label for="wavDither" data-i18n="labelDither">Dithering</label>
+              <select id="wavDither">
+                <option value="none" selected>Sin dither</option>
+                <option value="tpdf">TPDF (recomendado música)</option>
+                <option value="hp">High Pass</option>
+              </select>
+            </div>
+            <div>
+              <label for="wavResample" data-i18n="labelResample">Calidad de resampleo</label>
+              <select id="wavResample">
+                <option value="low">Baja (rápido)</option>
+                <option value="med" selected>Media</option>
+                <option value="high">Alta (calidad)</option>
+              </select>
+            </div>
+          </div>
+
           <p class="cover-note" id="wavNote"></p>
 
           <div class="preset-bar">
@@ -561,6 +580,8 @@
       labelFrecuencia: 'Frecuencia de muestreo',
       labelCanales: 'Canales',
       labelNormalizar: 'Normalizar',
+      labelDither: 'Dithering',
+      labelResample: 'Calidad de resampleo',
       wavMetaNote: 'Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.',
       btnGuardar: 'Guardar y descargar',
       btnCancelar: 'Cancelar',
@@ -613,6 +634,8 @@
       labelFrecuencia: 'Sample rate',
       labelCanales: 'Channels',
       labelNormalizar: 'Normalize',
+      labelDither: 'Dithering',
+      labelResample: 'Resample quality',
       wavMetaNote: 'The metadata you entered above is also saved in the WAV. Cover art is not saved in WAV format.',
       btnGuardar: 'Save and download',
       btnCancelar: 'Cancel',
@@ -664,6 +687,8 @@
       labelFrecuencia: 'Taxa de amostragem',
       labelCanales: 'Canais',
       labelNormalizar: 'Normalizar',
+      labelDither: 'Dithering',
+      labelResample: 'Qualidade de resampling',
       wavMetaNote: 'Os metadados que você preencheu acima também são salvos no WAV. A capa não é salva no formato WAV.',
       btnGuardar: 'Salvar e baixar',
       btnCancelar: 'Cancelar',
@@ -2000,6 +2025,8 @@
     if (p.rate) get('wavRate').value = p.rate;
     if (p.ch) get('wavCh').value = p.ch;
     if (p.norm) get('wavNorm').value = p.norm;
+    if (p.dither) get('wavDither').value = p.dither;
+    if (p.resample) get('wavResample').value = p.resample;
     updateWavNote();
   }
 
@@ -2011,7 +2038,9 @@
       bits: get('wavBits').value,
       rate: get('wavRate').value,
       ch: get('wavCh').value,
-      norm: get('wavNorm').value
+      norm: get('wavNorm').value,
+      dither: get('wavDither').value,
+      resample: get('wavResample').value
     };
     savePresets(presets);
     get('presetName').value = '';
@@ -2039,6 +2068,8 @@
     get('wavRate').value = '8000';
     get('wavCh').value = '1';
     get('wavNorm').value = 'none';
+    get('wavDither').value = 'none';
+    get('wavResample').value = 'med';
     get('presetSelect').value = '';
     updateWavNote();
     showSuccess(currentLang === 'es' ? 'Configuración reiniciada al mínimo.' : 'Settings reset to minimum.');
@@ -2209,6 +2240,23 @@
 
     const isFloat = opts.bitDepth === '32f';
     const bitDepthVal = isFloat ? 32 : parseInt(opts.bitDepth, 10);
+
+    if (!isFloat && opts.dither !== 'none' && bitDepthVal < 32) {
+      const maxVal = Math.pow(2, bitDepthVal - 1) - 1;
+      for (let c = 0; c < rendered.numberOfChannels; c++) {
+        const d = rendered.getChannelData(c);
+        for (let i = 0; i < d.length; i++) {
+          let noise;
+          if (opts.dither === 'tpdf') {
+            noise = (Math.random() + Math.random() + Math.random() - 1.5) / maxVal;
+          } else {
+            noise = (Math.random() - 0.5) / maxVal;
+          }
+          d[i] += noise * 0.5;
+        }
+      }
+    }
+
     return encodeWav(rendered, bitDepthVal, isFloat);
   }
 
@@ -2381,7 +2429,9 @@
             sampleRate: parseInt(get('wavRate').value, 10),
             channels: parseInt(get('wavCh').value, 10),
             bitDepth: get('wavBits').value,
-            normalize: get('wavNorm').value
+            normalize: get('wavNorm').value,
+            dither: get('wavDither').value,
+            resample: get('wavResample').value
           });
           const base = (get('title').value.trim() || currentFile.name.replace(/\.mp3$/i, ''));
           const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
