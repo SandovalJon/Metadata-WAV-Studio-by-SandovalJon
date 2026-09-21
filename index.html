@@ -173,6 +173,9 @@
   .preset-btn-del {
     background: var(--danger);
   }
+  .preset-btn-reset {
+    background: var(--muted);
+  }
 
   @media (max-width: 600px) {
     .row { flex-direction: column; gap: 0; }
@@ -476,6 +479,7 @@
             <div class="preset-actions">
               <input type="text" id="presetName" placeholder="Nombre del preset">
               <button type="button" class="preset-btn" id="presetSave" data-i18n="btnPresetSave">Guardar</button>
+              <button type="button" class="preset-btn preset-btn-reset" id="presetReset" data-i18n="btnPresetReset">Reset</button>
               <button type="button" class="preset-btn preset-btn-del" id="presetDelete" data-i18n="btnPresetDel">Eliminar</button>
             </div>
           </div>
@@ -563,6 +567,7 @@
       btnIniciar: 'Iniciar con Google',
       btnCerrar: 'Cerrar',
       btnPresetSave: 'Guardar',
+      btnPresetReset: 'Reset',
       btnPresetDel: 'Eliminar',
       soloMp3: 'Solo se admite formato MP3.',
       libLectora: 'No se pudo cargar la librería lectora. Revisa tu conexión a internet.',
@@ -2027,6 +2032,16 @@
     savePresets(presets);
     refreshPresetList();
     showSuccess(currentLang === 'es' ? 'Preset "' + name + '" eliminado.' : 'Preset "' + name + '" deleted.');
+  });
+
+  get('presetReset').addEventListener('click', () => {
+    get('wavBits').value = '8';
+    get('wavRate').value = '8000';
+    get('wavCh').value = '1';
+    get('wavNorm').value = 'none';
+    get('presetSelect').value = '';
+    updateWavNote();
+    showSuccess(currentLang === 'es' ? 'Configuración reiniciada al mínimo.' : 'Settings reset to minimum.');
   });
 
   refreshPresetList();
