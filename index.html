@@ -447,6 +447,7 @@
           <button type="button" class="remove-cover" id="removeCover" data-i18n="btnQuitarPortada">Quitar portada</button>
         </div>
       </fieldset>
+      <button type="button" class="btn-cancel" id="clearFields" data-i18n="btnLimpiar" style="width:100%;margin-top:12px;">Limpiar campos</button>
     </div>
 
     <div class="tab-panel" id="panelConvert">
@@ -624,6 +625,7 @@
       btnCancelar: 'Cancelar',
       btnIniciar: 'Iniciar con Google',
       btnCerrar: 'Cerrar',
+      btnLimpiar: 'Limpiar campos',
       btnPresetSave: 'Guardar',
       btnPresetReset: 'Reset',
       btnPresetDel: 'Eliminar',
@@ -680,6 +682,7 @@
       btnCancelar: 'Cancel',
       btnIniciar: 'Sign in with Google',
       btnCerrar: 'Sign out',
+      btnLimpiar: 'Clear fields',
       btnPresetSave: 'Save',
       btnPresetDel: 'Delete',
       soloMp3: 'Only MP3 and WAV formats are supported.',
@@ -735,6 +738,7 @@
       btnCancelar: 'Cancelar',
       btnIniciar: 'Entrar com Google',
       btnCerrar: 'Sair',
+      btnLimpiar: 'Limpar campos',
       btnPresetSave: 'Salvar',
       btnPresetDel: 'Excluir',
       soloMp3: 'Somente os formatos MP3 e WAV são aceitos.',
@@ -2471,6 +2475,16 @@
   });
 
   get('coverInput').addEventListener('change', () => setCover(get('coverInput').files[0]));
+
+  get('clearFields').addEventListener('click', () => {
+    ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => setField(id, ''));
+    coverBlob = null;
+    coverPending = null;
+    get('coverPreview').style.display = 'none';
+    get('coverInput').value = '';
+    get('coverImg').src = '';
+    showSuccess(currentLang === 'es' ? 'Campos limpiados.' : 'Fields cleared.');
+  });
 
   get('cancelBtn').addEventListener('click', () => {
     form.style.display = 'none';
