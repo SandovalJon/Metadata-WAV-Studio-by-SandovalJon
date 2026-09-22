@@ -1,5 +1,5 @@
-const CACHE = 'wav-studio-v1';
-const BASE = self.registration.scope;
+const CACHE = 'wav-studio-v2';
+const BASE = '/Metadata-WAV-Studio-by-SandovalJon/';
 const ASSETS = [
   BASE,
   BASE + 'index.html',
