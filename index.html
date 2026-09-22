@@ -1961,6 +1961,7 @@
 
   document.getElementById('previewConverted').addEventListener('click', async () => {
     if (!currentFile) return;
+    if (document.getElementById('previewConverted').disabled) return;
     stopPreview();
     document.getElementById('previewConverted').classList.add('playing');
     try {
