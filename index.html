@@ -2147,20 +2147,7 @@
   document.querySelectorAll('input[name="outFormat"]').forEach(r => {
     r.addEventListener('change', () => {
       const wav = document.querySelector('input[name="outFormat"]:checked').value === 'wav';
-      const isMp3Meta = !wav && currentFileType === 'mp3';
-      const convertedBtn = document.getElementById('previewConverted');
       get('wavOptions').style.display = wav ? 'block' : 'none';
-      if (isMp3Meta) {
-        convertedBtn.setAttribute('data-disabled', '1');
-        convertedBtn.style.opacity = '.4';
-        convertedBtn.style.cursor = 'not-allowed';
-        convertedBtn.style.pointerEvents = 'none';
-      } else {
-        convertedBtn.removeAttribute('data-disabled');
-        convertedBtn.style.opacity = '1';
-        convertedBtn.style.cursor = 'pointer';
-        convertedBtn.style.pointerEvents = 'auto';
-      }
       if (wav) updateWavNote();
     });
   });
@@ -2548,19 +2535,6 @@
     currentFile = file;
     currentFileType = isWav ? 'wav' : 'mp3';
 
-    const convertedBtn = document.getElementById('previewConverted');
-    if (!isWav) {
-      convertedBtn.setAttribute('data-disabled', '1');
-      convertedBtn.style.opacity = '.4';
-      convertedBtn.style.cursor = 'not-allowed';
-      convertedBtn.style.pointerEvents = 'none';
-    } else {
-      convertedBtn.removeAttribute('data-disabled');
-      convertedBtn.style.opacity = '1';
-      convertedBtn.style.cursor = 'pointer';
-      convertedBtn.style.pointerEvents = 'auto';
-    }
-
     const baseName = file.name.replace(/\.(mp3|wav)$/i, '');
     originalTags = { title: baseName };
     originalSize = file.size;
@@ -2653,21 +2627,12 @@
   function updateFormatOptions(isWavInput) {
     const mp3Label = document.querySelector('label[for="outFormat"] span[data-i18n="mp3Solo"]');
     const wavLabel = document.querySelector('label[for="outFormat"] span[data-i18n="wavConvertir"]');
-    const convertedBtn = document.getElementById('previewConverted');
     if (isWavInput) {
       mp3Label.textContent = 'MP3 (convertir audio)';
       wavLabel.textContent = 'WAV (solo metadatos)';
-      convertedBtn.removeAttribute('data-disabled');
-      convertedBtn.style.opacity = '1';
-      convertedBtn.style.cursor = 'pointer';
-      convertedBtn.style.pointerEvents = 'auto';
     } else {
       mp3Label.textContent = 'MP3 (solo metadatos)';
       wavLabel.textContent = 'WAV (convertir audio)';
-      convertedBtn.setAttribute('data-disabled', '1');
-      convertedBtn.style.opacity = '.4';
-      convertedBtn.style.cursor = 'not-allowed';
-      convertedBtn.style.pointerEvents = 'none';
     }
   }
 
