@@ -1,0 +1,22 @@
+{
+  "name": "Metadata & WAV Studio",
+  "short_name": "WAV Studio",
+  "description": "Edita metadatos, cambia portadas y convierte entre MP3 y WAV.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#58a6ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
