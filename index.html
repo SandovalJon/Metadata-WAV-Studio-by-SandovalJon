@@ -2669,6 +2669,19 @@
     currentFile = file;
     currentFileType = isWav ? 'wav' : 'mp3';
 
+    const convertedBtn = document.getElementById('previewConverted');
+    if (!isWav) {
+      convertedBtn.setAttribute('data-disabled', '1');
+      convertedBtn.style.opacity = '.4';
+      convertedBtn.style.cursor = 'not-allowed';
+      convertedBtn.style.pointerEvents = 'none';
+    } else {
+      convertedBtn.removeAttribute('data-disabled');
+      convertedBtn.style.opacity = '1';
+      convertedBtn.style.cursor = 'pointer';
+      convertedBtn.style.pointerEvents = 'auto';
+    }
+
     const baseName = file.name.replace(/\.(mp3|wav)$/i, '');
     originalTags = { title: baseName };
     originalSize = file.size;
