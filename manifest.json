@@ -1,6 +1,6 @@
 {
-  "name": "Metadata & WAV Studio",
-  "short_name": "WAV Studio",
+  "name": "Audio Studio",
+  "short_name": "Audio Studio",
   "description": "Edita metadatos, cambia portadas y convierte entre MP3 y WAV.",
   "start_url": "/",
   "display": "standalone",
