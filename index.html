@@ -2008,7 +2008,6 @@
   }
 
   const savedTheme = load('theme', 'noche');
-  setTheme(savedTheme);
 
   document.getElementById('themeSelect').addEventListener('change', e => setTheme(e.target.value));
   // ===== END THEME =====
@@ -2080,8 +2079,10 @@
       document.getElementById('userSection').style.display = 'none';
       if (existingOpt) existingOpt.remove();
     }
-    if (!isOwner && themeSel.value === 'esmeralda') {
+    if (!isOwner && savedTheme === 'esmeralda') {
       setTheme('noche');
+    } else {
+      setTheme(savedTheme);
     }
   });
   // ===== END FIREBASE AUTH =====
