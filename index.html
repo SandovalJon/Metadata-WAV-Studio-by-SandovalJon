@@ -440,7 +440,6 @@
   <div class="lang-bar">
     <select id="themeSelect">
       <option value="noche">Noche</option>
-      <option value="esmeralda" style="display:none" id="esmeraldaOpt">Esmeralda</option>
       <option value="atardecer">Atardecer</option>
     </select>
     <select id="langSelect">
@@ -2062,20 +2061,26 @@
   };
 
   auth.onAuthStateChanged(user => {
-    const esmeraldaOpt = document.getElementById('esmeraldaOpt');
+    const themeSel = document.getElementById('themeSelect');
+    const existingOpt = themeSel.querySelector('option[value="esmeralda"]');
     const isOwner = user && user.email === 'jdss07@outlook.fr';
     if (user) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('userSection').style.display = 'flex';
       document.getElementById('userName').textContent = user.displayName;
       document.getElementById('userPhoto').src = user.photoURL;
-      esmeraldaOpt.style.display = isOwner ? '' : 'none';
+      if (isOwner && !existingOpt) {
+        const opt = document.createElement('option');
+        opt.value = 'esmeralda';
+        opt.textContent = 'Esmeralda';
+        themeSel.insertBefore(opt, themeSel.querySelector('option[value="atardecer"]'));
+      }
     } else {
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('userSection').style.display = 'none';
-      esmeraldaOpt.style.display = 'none';
+      if (existingOpt) existingOpt.remove();
     }
-    if (!isOwner && document.getElementById('themeSelect').value === 'esmeralda') {
+    if (!isOwner && themeSel.value === 'esmeralda') {
       setTheme('noche');
     }
   });
