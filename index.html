@@ -204,32 +204,6 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; animation: fadeSlideIn .2s ease; }
 
-  .preview-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .preview-btn {
-    flex: 1;
-    min-width: 120px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
-    font-size: .85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .2s;
-    text-align: center;
-  }
-  .preview-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .preview-btn:active { transform: scale(.97); }
-  .preview-btn.playing { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,.1); }
-  .preview-btn-stop { color: var(--danger); }
-  .preview-btn-stop:hover { border-color: var(--danger); }
-
   @media (max-width: 600px) {
     .row { flex-direction: column; gap: 0; }
     .actions { flex-direction: column; }
@@ -484,11 +458,6 @@
     </div>
 
     <div class="tab-panel" id="panelConvert">
-      <div class="preview-bar">
-        <button type="button" class="preview-btn" id="previewOriginal">▶ Original (10s)</button>
-        <button type="button" class="preview-btn" id="previewConverted">▶ Convertido (10s)</button>
-        <button type="button" class="preview-btn preview-btn-stop" id="previewStop">■ Detener</button>
-      </div>
       <div class="convert-div">
         <label data-i18n="formatoSalida">Formato de salida</label>
         <div class="radio-row">
@@ -640,9 +609,6 @@
       lblBitrate: 'Bitrate',
       lblSampleRate: 'Frecuencia',
       lblCanalesInfo: 'Canales',
-      btnPreviewOrg: '▶ Original (10s)',
-      btnPreviewConv: '▶ Convertido (10s)',
-      btnPreviewStop: '■ Detener',
       labelTitulo: 'Título',
       labelArtista: 'Artista',
       labelAlbum: 'Álbum',
@@ -1928,93 +1894,6 @@
     });
   });
   // ===== END TABS =====
-
-  // ===== PREVIEW =====
-  let previewCtx = null;
-  let previewSource = null;
-
-  function stopPreview() {
-    if (previewSource) { try { previewSource.stop(); } catch(e) {} previewSource = null; }
-    if (previewCtx) { previewCtx.close(); previewCtx = null; }
-    document.querySelectorAll('.preview-btn').forEach(b => b.classList.remove('playing'));
-  }
-
-  async function playPreview(file, duration) {
-    stopPreview();
-    const buf = await file.arrayBuffer();
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    previewCtx = new AudioCtx();
-    const audio = await previewCtx.decodeAudioData(buf);
-    previewSource = previewCtx.createBufferSource();
-    previewSource.buffer = audio;
-    previewSource.connect(previewCtx.destination);
-    previewSource.start(0, 0, duration);
-    previewSource.onended = () => { stopPreview(); };
-  }
-
-  document.getElementById('previewOriginal').addEventListener('click', async () => {
-    if (!currentFile) return;
-    stopPreview();
-    document.getElementById('previewOriginal').classList.add('playing');
-    await playPreview(currentFile, 10);
-  });
-
-  document.getElementById('previewConverted').addEventListener('click', async () => {
-    if (!currentFile) return;
-    if (document.getElementById('previewConverted').hasAttribute('data-disabled')) return;
-    stopPreview();
-    document.getElementById('previewConverted').classList.add('playing');
-    try {
-      const outFormat = document.querySelector('input[name="outFormat"]:checked').value;
-
-      if (outFormat === 'wav') {
-        const blob = await convertToWav(currentFile, {
-          sampleRate: parseInt(get('wavRate').value, 10),
-          channels: parseInt(get('wavCh').value, 10),
-          bitDepth: get('wavBits').value,
-          normalize: get('wavNorm').value,
-          dither: get('wavDither').value,
-          resample: get('wavResample').value
-        });
-        const buf = await blob.arrayBuffer();
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        previewCtx = new AudioCtx();
-        const audio = await previewCtx.decodeAudioData(buf);
-        previewSource = previewCtx.createBufferSource();
-        const length = Math.min(audio.length, audio.sampleRate * 10);
-        const trimmed = previewCtx.createBuffer(audio.numberOfChannels, length, audio.sampleRate);
-        for (let c = 0; c < audio.numberOfChannels; c++) {
-          trimmed.copyToChannel(audio.getChannelData(c).subarray(0, length), c);
-        }
-        previewSource.buffer = trimmed;
-        previewSource.connect(previewCtx.destination);
-        previewSource.start(0);
-        previewSource.onended = () => { stopPreview(); };
-      } else {
-        const buf = await currentFile.arrayBuffer();
-        const blob = await convertWavToMp3(buf, { sampleRate: 44100, channels: 2, bitrate: 192 });
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        previewCtx = new AudioCtx();
-        const audio = await previewCtx.decodeAudioData(await blob.arrayBuffer());
-        previewSource = previewCtx.createBufferSource();
-        const length = Math.min(audio.length, audio.sampleRate * 10);
-        const trimmed = previewCtx.createBuffer(audio.numberOfChannels, length, audio.sampleRate);
-        for (let c = 0; c < audio.numberOfChannels; c++) {
-          trimmed.copyToChannel(audio.getChannelData(c).subarray(0, length), c);
-        }
-        previewSource.buffer = trimmed;
-        previewSource.connect(previewCtx.destination);
-        previewSource.start(0);
-        previewSource.onended = () => { stopPreview(); };
-      }
-    } catch(e) {
-      stopPreview();
-      showError(T[currentLang].wavError + e.message);
-    }
-  });
-
-  document.getElementById('previewStop').addEventListener('click', stopPreview);
-  // ===== END PREVIEW =====
 
   // ===== THEME =====
   function setTheme(theme) {
