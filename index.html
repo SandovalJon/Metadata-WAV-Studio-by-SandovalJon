@@ -177,6 +177,94 @@
     background: var(--muted);
   }
 
+  /* Skeleton loading */
+  .skeleton-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9998;
+    animation: fadeIn .2s ease;
+  }
+  .skeleton-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 32px 40px; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  .skeleton-spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  .skeleton-text { color: var(--text); font-size: .95rem; font-weight: 600; }
+  .skeleton-sub { color: var(--muted); font-size: .8rem; margin-top: 4px; }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-top: 12px;
+    background: var(--border);
+    border-radius: 6px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 6px;
+    width: 0%;
+    transition: width .3s ease;
+  }
+
+  /* Success animation */
+  .success-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9998;
+    animation: fadeIn .2s ease, fadeOut .3s ease 1.5s forwards;
+  }
+  .success-check {
+    width: 80px; height: 80px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    animation: popIn .3s ease;
+  }
+  .success-check svg {
+    width: 40px; height: 40px;
+    stroke: #fff; stroke-width: 3; fill: none;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    animation: drawCheck .4s ease .2s forwards;
+  }
+
+  /* Checkmark on file loaded */
+  .file-loaded-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    font-size: .85rem;
+    font-weight: 600;
+    margin-top: 6px;
+    animation: fadeSlideIn .3s ease;
+  }
+  .file-loaded-check svg {
+    width: 16px; height: 16px;
+    stroke: var(--accent); stroke-width: 3; fill: none;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: drawCheck .3s ease .1s forwards;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+
   .tab-bar {
     display: flex;
     gap: 0;
@@ -389,6 +477,10 @@
     <strong data-i18n="archivo">Archivo:</strong> <span id="fileName"></span><br>
     <strong data-i18n="tamano">Tamaño:</strong> <span id="fileSize"></span><br>
     <strong data-i18n="tituloActual">Título actual:</strong> <span id="currentTitle"></span>
+    <div id="fileLoadedCheck" class="file-loaded-check" style="display:none;">
+      <svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>
+      <span data-i18n="archivoListo">Archivo listo</span>
+    </div>
     <div id="fileMeta" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted);">
       <span id="fileDuration"></span> &middot; <span id="fileBitrate"></span> &middot; <span id="fileSampleRate"></span> &middot; <span id="fileChannels"></span>
     </div>
@@ -637,6 +729,7 @@
       btnIniciar: 'Iniciar con Google',
       btnCerrar: 'Cerrar',
       btnLimpiar: 'Limpiar campos',
+      archivoListo: 'Archivo listo',
       btnPresetSave: 'Guardar',
       btnPresetReset: 'Reset',
       btnPresetDel: 'Eliminar',
@@ -701,6 +794,7 @@
       btnIniciar: 'Sign in with Google',
       btnCerrar: 'Sign out',
       btnLimpiar: 'Clear fields',
+      archivoListo: 'File ready',
       btnPresetSave: 'Save',
       btnPresetDel: 'Delete',
       soloMp3: 'Only MP3 and WAV formats are supported.',
@@ -764,6 +858,7 @@
       btnIniciar: 'Entrar com Google',
       btnCerrar: 'Sair',
       btnLimpiar: 'Limpar campos',
+      archivoListo: 'Arquivo pronto',
       btnPresetSave: 'Salvar',
       btnPresetDel: 'Excluir',
       soloMp3: 'Somente os formatos MP3 e WAV são aceitos.',
@@ -2129,6 +2224,42 @@
   function busy(on) {
     get('saveBtn').disabled = on;
     get('saveBtn').textContent = on ? T[currentLang].guardando : T[currentLang].btnGuardar;
+    const existing = document.querySelector('.skeleton-overlay');
+    if (on && !existing) {
+      const overlay = document.createElement('div');
+      overlay.className = 'skeleton-overlay';
+      overlay.innerHTML = '<div class="skeleton-box"><div class="skeleton-spinner"></div><div class="skeleton-text">' + T[currentLang].guardando + '</div><div class="skeleton-sub">' + (currentLang === 'es' ? 'Esto puede tardar unos segundos' : 'This may take a few seconds') + '</div><div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div></div>';
+      document.body.appendChild(overlay);
+      animateProgress();
+    } else if (!on && existing) {
+      existing.remove();
+    }
+  }
+
+  let progressInterval = null;
+  function animateProgress() {
+    const bar = document.getElementById('progressBar');
+    if (!bar) return;
+    let pct = 0;
+    progressInterval = setInterval(() => {
+      pct += Math.random() * 15;
+      if (pct > 90) pct = 90;
+      bar.style.width = pct + '%';
+    }, 300);
+  }
+
+  function finishProgress() {
+    if (progressInterval) clearInterval(progressInterval);
+    const bar = document.getElementById('progressBar');
+    if (bar) bar.style.width = '100%';
+  }
+
+  function showSuccessAnimation() {
+    const overlay = document.createElement('div');
+    overlay.className = 'success-overlay';
+    overlay.innerHTML = '<div class="success-check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></div>';
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 2000);
   }
 
   function estimateMbPerMin(rate, bits, ch) {
@@ -2550,6 +2681,8 @@
     document.getElementById('fileSize').textContent = formatSize(originalSize);
     currentTitle.textContent = baseName;
     fileInfo.style.display = 'block';
+    document.getElementById('fileLoadedCheck').style.display = 'flex';
+    setTimeout(() => document.getElementById('fileLoadedCheck').style.display = 'none', 3000);
 
     document.getElementById('fileMeta').style.display = 'none';
     file.arrayBuffer().then(buf => {
@@ -2659,6 +2792,8 @@
         console.error(err);
         showError(T[currentLang].wavError + err.message);
       } finally {
+        finishProgress();
+        showSuccessAnimation();
         busy(false);
         batchFiles = [];
       }
@@ -2684,6 +2819,8 @@
         console.error(err);
         showError(T[currentLang].errorMeta + err.message);
       } finally {
+        finishProgress();
+        showSuccessAnimation();
         busy(false);
         batchFiles = [];
       }
@@ -2713,6 +2850,8 @@
         console.error(err);
         showError(T[currentLang].wavError + err.message);
       } finally {
+        finishProgress();
+        showSuccessAnimation();
         busy(false);
         batchFiles = [];
       }
