@@ -2200,7 +2200,7 @@
     return new Uint8Array(buf);
   }
 
-  function encodeWav(audioBuffer, bitDepth, isFloat) {
+  function encodeWav(audioBuffer, bitDepth, isFloat, listInfo) {
     const numCh = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
     const length = audioBuffer.length;
@@ -2208,7 +2208,7 @@
     const blockAlign = numCh * bytesPerSample;
     const dataSize = length * blockAlign;
 
-    const list = buildListInfo();
+    const list = listInfo || buildListInfo();
     const listExtra = list ? 8 + list.length : 0;
     const riffSize = 36 + dataSize + listExtra;
     const total = 44 + dataSize + listExtra;
@@ -2518,8 +2518,13 @@
 
   function updateFormatOptions(isWavInput) {
     const mp3Label = document.querySelector('label[for="outFormat"] span[data-i18n="mp3Solo"]');
+    const wavLabel = document.querySelector('label[for="outFormat"] span[data-i18n="wavConvertir"]');
     if (isWavInput) {
       mp3Label.textContent = 'MP3 (convertir audio)';
+      wavLabel.textContent = 'WAV (solo metadatos)';
+    } else {
+      mp3Label.textContent = 'MP3 (solo metadatos)';
+      wavLabel.textContent = 'WAV (convertir audio)';
     }
   }
 
@@ -2540,8 +2545,8 @@
           const blob = await convertWavToMp3(buf, { sampleRate: 44100, channels: 2, bitrate: 192 });
           const base = get('title').value.trim() || f.name.replace(/\.wav$/i, '');
           saveBlob(blob, base + '.mp3');
-          showSuccess(T[currentLang].wavExito + formatSize(blob.size));
         }
+        showSuccess(T[currentLang].wavExito + formatSize(allFiles.length) + (currentLang === 'es' ? ' archivos' : ' files'));
       } catch (err) {
         console.error(err);
         showError(T[currentLang].wavError + err.message);
@@ -2552,7 +2557,32 @@
       return;
     }
 
-    if (outFormat === 'wav') {
+    if (isWavInput && outFormat === 'wav') {
+      busy(true);
+      try {
+        for (let fi = 0; fi < allFiles.length; fi++) {
+          const f = allFiles[fi];
+          const raw = await f.arrayBuffer();
+          const listInfo = buildListInfo();
+          const audioBuf = await new (window.AudioContext || window.webkitAudioContext)().decodeAudioData(raw);
+          const isFloat = get('wavBits').value === '32f';
+          const bitDepthVal = isFloat ? 32 : parseInt(get('wavBits').value, 10);
+          const blob = encodeWav(audioBuf, bitDepthVal, isFloat, listInfo);
+          const base = get('title').value.trim() || f.name.replace(/\.wav$/i, '');
+          saveBlob(blob, base + '.wav');
+        }
+        showSuccess(T[currentLang].metaGuardados + T[currentLang].descarga);
+      } catch (err) {
+        console.error(err);
+        showError(T[currentLang].errorMeta + err.message);
+      } finally {
+        busy(false);
+        batchFiles = [];
+      }
+      return;
+    }
+
+    if (!isWavInput && outFormat === 'wav') {
       busy(true);
       try {
         for (let fi = 0; fi < allFiles.length; fi++) {
@@ -2565,12 +2595,12 @@
             dither: get('wavDither').value,
             resample: get('wavResample').value
           });
-          const base = (get('title').value.trim() || f.name.replace(/\.(mp3|wav)$/i, ''));
+          const base = (get('title').value.trim() || f.name.replace(/\.mp3$/i, ''));
           const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
           const chLabel = get('wavCh').value === '1' ? 'mono' : 'stereo';
           saveBlob(blob, base + '_' + get('wavRate').value + 'Hz_' + chLabel + '_' + bitsLabel + '.wav');
         }
-        showSuccess(T[currentLang].wavExito + formatSize((await allFiles[0].arrayBuffer()).byteLength));
+        showSuccess(T[currentLang].wavExito + formatSize(allFiles.length) + (currentLang === 'es' ? ' archivos' : ' files'));
       } catch (err) {
         console.error(err);
         showError(T[currentLang].wavError + err.message);
@@ -2595,7 +2625,7 @@
         const f = allFiles[fi];
         if (coverPending) await coverPending;
         const raw = await f.arrayBuffer();
-        const arrayBuffer = f.name.toLowerCase().endsWith('.wav') ? raw : cleanAudio(raw);
+        const arrayBuffer = cleanAudio(raw);
         const writer = new ID3Writer(arrayBuffer);
         writer.padding = 0;
 
@@ -2620,7 +2650,7 @@
 
         writer.addTag();
         const blob = writer.getBlob();
-        saveBlob(blob, (get('title').value.trim() || f.name.replace(/\.(mp3|wav)$/i, '')) + '.mp3');
+        saveBlob(blob, (get('title').value.trim() || f.name.replace(/\.mp3$/i, '')) + '.mp3');
       }
       showSuccess(T[currentLang].metaGuardados + (coverBlob ? T[currentLang].conPortada : T[currentLang].sinPortada) + T[currentLang].descarga + formatSize(originalSize));
     } catch (err) {
