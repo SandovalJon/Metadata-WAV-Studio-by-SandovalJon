@@ -2930,7 +2930,34 @@
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const sw = reg.installing;
+      sw.addEventListener('statechange', () => {
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner();
+        }
+      });
+    });
+  }).catch(() => {});
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; window.location.reload(); }
+  });
+}
+
+function showUpdateBanner() {
+  if (document.getElementById('updateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.style.cssText = 'position:fixed;bottom:70px;left:16px;right:16px;background:var(--accent);color:#fff;padding:12px 20px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;font-size:.9rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;';
+  banner.innerHTML = '<span>' + (localStorage.getItem('lang') === '"es"' ? 'Nueva versión disponible' : 'New version available') + '</span>';
+  const btn = document.createElement('button');
+  btn.textContent = 'Actualizar';
+  btn.style.cssText = 'background:#fff;color:var(--accent);border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.85rem;';
+  btn.onclick = () => { navigator.serviceWorker.controller.postMessage({skipWaiting: true}); navigator.serviceWorker.getRegistration().then(r => r && r.waiting && r.waiting.postMessage({skipWaiting: true})); };
+  banner.appendChild(btn);
+  document.body.appendChild(banner);
 }
 </script>
 </body>
