@@ -2063,19 +2063,20 @@
 
   auth.onAuthStateChanged(user => {
     const esmeraldaOpt = document.getElementById('esmeraldaOpt');
+    const isOwner = user && user.email === 'jdss07@outlook.fr';
     if (user) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('userSection').style.display = 'flex';
       document.getElementById('userName').textContent = user.displayName;
       document.getElementById('userPhoto').src = user.photoURL;
-      esmeraldaOpt.style.display = '';
+      esmeraldaOpt.style.display = isOwner ? '' : 'none';
     } else {
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('userSection').style.display = 'none';
       esmeraldaOpt.style.display = 'none';
-      if (document.getElementById('themeSelect').value === 'esmeralda') {
-        setTheme('noche');
-      }
+    }
+    if (!isOwner && document.getElementById('themeSelect').value === 'esmeralda') {
+      setTheme('noche');
     }
   });
   // ===== END FIREBASE AUTH =====
