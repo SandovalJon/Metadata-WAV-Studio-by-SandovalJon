@@ -2267,7 +2267,11 @@
   document.querySelectorAll('input[name="outFormat"]').forEach(r => {
     r.addEventListener('change', () => {
       const wav = document.querySelector('input[name="outFormat"]:checked').value === 'wav';
+      const isMp3Meta = !wav && currentFileType === 'mp3';
       get('wavOptions').style.display = wav ? 'block' : 'none';
+      document.getElementById('previewConverted').disabled = isMp3Meta;
+      document.getElementById('previewConverted').style.opacity = isMp3Meta ? '.4' : '1';
+      document.getElementById('previewConverted').style.cursor = isMp3Meta ? 'not-allowed' : 'pointer';
       if (wav) updateWavNote();
     });
   });
@@ -2747,12 +2751,19 @@
   function updateFormatOptions(isWavInput) {
     const mp3Label = document.querySelector('label[for="outFormat"] span[data-i18n="mp3Solo"]');
     const wavLabel = document.querySelector('label[for="outFormat"] span[data-i18n="wavConvertir"]');
+    const convertedBtn = document.getElementById('previewConverted');
     if (isWavInput) {
       mp3Label.textContent = 'MP3 (convertir audio)';
       wavLabel.textContent = 'WAV (solo metadatos)';
+      convertedBtn.disabled = false;
+      convertedBtn.style.opacity = '1';
+      convertedBtn.style.cursor = 'pointer';
     } else {
       mp3Label.textContent = 'MP3 (solo metadatos)';
       wavLabel.textContent = 'WAV (convertir audio)';
+      convertedBtn.disabled = true;
+      convertedBtn.style.opacity = '.4';
+      convertedBtn.style.cursor = 'not-allowed';
     }
   }
 
