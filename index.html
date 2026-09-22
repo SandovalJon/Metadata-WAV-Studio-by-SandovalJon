@@ -177,6 +177,33 @@
     background: var(--muted);
   }
 
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeSlideIn .2s ease; }
+
   @media (max-width: 600px) {
     .row { flex-direction: column; gap: 0; }
     .actions { flex-direction: column; }
@@ -222,9 +249,7 @@
     cursor: pointer;
   }
   .convert-div {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
+    margin-top: 0;
   }
   button:disabled { opacity: .6; cursor: not-allowed; }
 
@@ -363,59 +388,68 @@
   <div id="fileInfo"><strong data-i18n="archivo">Archivo:</strong> <span id="fileName"></span><br><strong data-i18n="tamano">Tamaño:</strong> <span id="fileSize"></span><br><strong data-i18n="tituloActual">Título actual:</strong> <span id="currentTitle"></span></div>
 
   <form id="editForm">
-    <fieldset>
-      <label for="title" data-i18n="labelTitulo">Título</label>
-      <input type="text" id="title">
+    <div class="tab-bar">
+      <button type="button" class="tab-btn active" data-tab="edit" data-i18n="tabEditar">Editar metadatos</button>
+      <button type="button" class="tab-btn" data-tab="convert" data-i18n="tabConvertir">Convertir audio</button>
+    </div>
 
-      <label for="artist" data-i18n="labelArtista">Artista</label>
-      <input type="text" id="artist">
+    <div class="tab-panel active" id="panelEdit">
+      <fieldset>
+        <label for="title" data-i18n="labelTitulo">Título</label>
+        <input type="text" id="title">
 
-      <div class="row">
-        <div>
-          <label for="album" data-i18n="labelAlbum">Álbum</label>
-          <input type="text" id="album">
+        <label for="artist" data-i18n="labelArtista">Artista</label>
+        <input type="text" id="artist">
+
+        <div class="row">
+          <div>
+            <label for="album" data-i18n="labelAlbum">Álbum</label>
+            <input type="text" id="album">
+          </div>
+          <div>
+            <label for="albumArtist" data-i18n="labelArtistaAlbum">Artista del álbum</label>
+            <input type="text" id="albumArtist">
+          </div>
         </div>
-        <div>
-          <label for="albumArtist" data-i18n="labelArtistaAlbum">Artista del álbum</label>
-          <input type="text" id="albumArtist">
-        </div>
-      </div>
 
-      <div class="row">
-        <div>
-          <label for="year" data-i18n="labelAno">Año</label>
-          <input type="text" id="year">
+        <div class="row">
+          <div>
+            <label for="year" data-i18n="labelAno">Año</label>
+            <input type="text" id="year">
+          </div>
+          <div>
+            <label for="track" data-i18n="labelPista">Pista (número/total)</label>
+            <input type="text" id="track" placeholder="ej. 3/12">
+          </div>
         </div>
-        <div>
-          <label for="track" data-i18n="labelPista">Pista (número/total)</label>
-          <input type="text" id="track" placeholder="ej. 3/12">
+
+        <div class="row">
+          <div>
+            <label for="genre" data-i18n="labelGenero">Género</label>
+            <input type="text" id="genre">
+          </div>
+          <div>
+            <label for="composer" data-i18n="labelCompositor">Compositor</label>
+            <input type="text" id="composer">
+          </div>
         </div>
-      </div>
 
-      <div class="row">
-        <div>
-          <label for="genre" data-i18n="labelGenero">Género</label>
-          <input type="text" id="genre">
+        <label for="comment" data-i18n="labelComentario">Comentario</label>
+        <input type="text" id="comment">
+
+        <label for="coverInput" data-i18n="labelPortada">Portada (opcional)</label>
+        <button type="button" class="cover-btn" id="coverBtn" data-i18n="btnPortada">Añadir o arrastrar portada aquí (JPG/PNG)</button>
+        <input type="file" id="coverInput" accept="image/*">
+        <p class="cover-note" data-i18n="coverNote">La portada se incrusta dentro del audio: <strong>el archivo crecerá aprox. el tamaño de la imagen</strong>.</p>
+        <div class="preview" id="coverPreview" style="display:none;">
+          <img id="coverImg" alt="portada">
+          <span id="coverSize"></span>
+          <button type="button" class="remove-cover" id="removeCover" data-i18n="btnQuitarPortada">Quitar portada</button>
         </div>
-        <div>
-          <label for="composer" data-i18n="labelCompositor">Compositor</label>
-          <input type="text" id="composer">
-        </div>
-      </div>
+      </fieldset>
+    </div>
 
-      <label for="comment" data-i18n="labelComentario">Comentario</label>
-      <input type="text" id="comment">
-
-      <label for="coverInput" data-i18n="labelPortada">Portada (opcional)</label>
-      <button type="button" class="cover-btn" id="coverBtn" data-i18n="btnPortada">Añadir o arrastrar portada aquí (JPG/PNG)</button>
-      <input type="file" id="coverInput" accept="image/*">
-      <p class="cover-note" data-i18n="coverNote">La portada se incrusta dentro del audio: <strong>el archivo crecerá aprox. el tamaño de la imagen</strong>.</p>
-      <div class="preview" id="coverPreview" style="display:none;">
-        <img id="coverImg" alt="portada">
-        <span id="coverSize"></span>
-        <button type="button" class="remove-cover" id="removeCover" data-i18n="btnQuitarPortada">Quitar portada</button>
-      </div>
-
+    <div class="tab-panel" id="panelConvert">
       <div class="convert-div">
         <label data-i18n="formatoSalida">Formato de salida</label>
         <div class="radio-row">
@@ -443,7 +477,7 @@
                 <option value="16000">16000 Hz</option>
                 <option value="22050">22050 Hz</option>
                 <option value="32000">32000 Hz</option>
-                <option value="44100" selected>44100 Hz</option>
+                <option value="44100">44100 Hz</option>
                 <option value="48000">48000 Hz</option>
                 <option value="88200">88200 Hz</option>
                 <option value="96000">96000 Hz</option>
@@ -503,10 +537,10 @@
             </div>
           </div>
 
-          <p class="cover-note" data-i18n="wavMetaNote">Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
+          <p class="cover-note" data-i18n="wavMetaNote">Los metadatos que completaste en la pestaña Editar se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
         </div>
       </div>
-    </fieldset>
+    </div>
 
     <div class="actions">
       <button type="submit" class="btn-download" id="saveBtn" data-i18n="btnGuardar">Guardar y descargar</button>
@@ -561,6 +595,8 @@
       archivo: 'Archivo:',
       tamano: 'Tamaño:',
       tituloActual: 'Título actual:',
+      tabEditar: 'Editar metadatos',
+      tabConvertir: 'Convertir audio',
       labelTitulo: 'Título',
       labelArtista: 'Artista',
       labelAlbum: 'Álbum',
@@ -615,6 +651,8 @@
       archivo: 'File:',
       tamano: 'Size:',
       tituloActual: 'Current title:',
+      tabEditar: 'Edit metadata',
+      tabConvertir: 'Convert audio',
       labelTitulo: 'Title',
       labelArtista: 'Artist',
       labelAlbum: 'Album',
@@ -668,6 +706,8 @@
       arquivo: 'Arquivo:',
       tamano: 'Tamanho:',
       tituloActual: 'Título atual:',
+      tabEditar: 'Editar metadados',
+      tabConvertir: 'Converter áudio',
       labelTitulo: 'Título',
       labelArtista: 'Artista',
       labelAlbum: 'Álbum',
@@ -1814,6 +1854,17 @@
   document.getElementById('langSelect').addEventListener('change', e => setLanguage(e.target.value));
 
   setLanguage(currentLang);
+
+  // ===== TABS =====
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+    });
+  });
+  // ===== END TABS =====
 
   // ===== THEME =====
   function setTheme(theme) {
