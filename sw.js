@@ -1,8 +1,11 @@
 const CACHE = 'wav-studio-v1';
+const BASE = self.registration.scope;
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'icon-192.png',
+  BASE + 'icon-512.png',
   'https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js',
   'https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.js',
   'https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js',
