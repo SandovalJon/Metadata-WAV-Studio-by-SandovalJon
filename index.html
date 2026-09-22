@@ -385,7 +385,14 @@
     <small data-i18n="oclic">o haz clic para seleccionar archivos (MP3/WAV)</small>
   </div>
 
-  <div id="fileInfo"><strong data-i18n="archivo">Archivo:</strong> <span id="fileName"></span><br><strong data-i18n="tamano">Tamaño:</strong> <span id="fileSize"></span><br><strong data-i18n="tituloActual">Título actual:</strong> <span id="currentTitle"></span></div>
+  <div id="fileInfo">
+    <strong data-i18n="archivo">Archivo:</strong> <span id="fileName"></span><br>
+    <strong data-i18n="tamano">Tamaño:</strong> <span id="fileSize"></span><br>
+    <strong data-i18n="tituloActual">Título actual:</strong> <span id="currentTitle"></span>
+    <div id="fileMeta" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted);">
+      <span id="fileDuration"></span> &middot; <span id="fileBitrate"></span> &middot; <span id="fileSampleRate"></span> &middot; <span id="fileChannels"></span>
+    </div>
+  </div>
 
   <form id="editForm">
     <div class="tab-bar">
@@ -598,6 +605,10 @@
       tituloActual: 'Título actual:',
       tabEditar: 'Editar metadatos',
       tabConvertir: 'Convertir audio',
+      lblDuracion: 'Duración',
+      lblBitrate: 'Bitrate',
+      lblSampleRate: 'Frecuencia',
+      lblCanalesInfo: 'Canales',
       labelTitulo: 'Título',
       labelArtista: 'Artista',
       labelAlbum: 'Álbum',
@@ -655,6 +666,10 @@
       tituloActual: 'Current title:',
       tabEditar: 'Edit metadata',
       tabConvertir: 'Convert audio',
+      lblDuracion: 'Duration',
+      lblBitrate: 'Bitrate',
+      lblSampleRate: 'Sample rate',
+      lblCanalesInfo: 'Channels',
       labelTitulo: 'Title',
       labelArtista: 'Artist',
       labelAlbum: 'Album',
@@ -711,6 +726,10 @@
       tituloActual: 'Título atual:',
       tabEditar: 'Editar metadados',
       tabConvertir: 'Converter áudio',
+      lblDuracion: 'Duração',
+      lblBitrate: 'Bitrate',
+      lblSampleRate: 'Taxa de amostragem',
+      lblCanalesInfo: 'Canais',
       labelTitulo: 'Título',
       labelArtista: 'Artista',
       labelAlbum: 'Álbum',
@@ -2525,6 +2544,24 @@
     document.getElementById('fileSize').textContent = formatSize(originalSize);
     currentTitle.textContent = baseName;
     fileInfo.style.display = 'block';
+
+    document.getElementById('fileMeta').style.display = 'none';
+    file.arrayBuffer().then(buf => {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      ctx.decodeAudioData(buf).then(audio => {
+        ctx.close();
+        const dur = audio.duration;
+        const min = Math.floor(dur / 60);
+        const sec = Math.floor(dur % 60);
+        document.getElementById('fileDuration').textContent = min + ':' + String(sec).padStart(2, '0');
+        document.getElementById('fileSampleRate').textContent = audio.sampleRate + ' Hz';
+        document.getElementById('fileChannels').textContent = audio.numberOfChannels === 1 ? 'Mono' : 'Estéreo';
+        const bitrate = Math.round((originalSize * 8) / dur / 1000);
+        document.getElementById('fileBitrate').textContent = bitrate + ' kbps';
+        document.getElementById('fileMeta').style.display = 'block';
+      }).catch(() => {});
+    }).catch(() => {});
 
     if (isWav) {
       file.arrayBuffer().then(buf => {
