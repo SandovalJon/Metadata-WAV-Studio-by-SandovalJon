@@ -1964,31 +1964,48 @@
     stopPreview();
     document.getElementById('previewConverted').classList.add('playing');
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const srcCtx = new AudioCtx();
-      const buf = await currentFile.arrayBuffer();
-      const audio = await srcCtx.decodeAudioData(buf);
-      await srcCtx.close();
+      const outFormat = document.querySelector('input[name="outFormat"]:checked').value;
 
-      const numCh = audio.numberOfChannels;
-      const length = Math.min(audio.length, audio.sampleRate * 10);
-      const outCtx = new OfflineAudioContext(numCh, length, audio.sampleRate);
-      const src = outCtx.createBufferSource();
-      const trimmed = outCtx.createBuffer(numCh, length, audio.sampleRate);
-      for (let c = 0; c < numCh; c++) {
-        trimmed.copyToChannel(audio.getChannelData(c).subarray(0, length), c);
+      if (outFormat === 'wav') {
+        const blob = await convertToWav(currentFile, {
+          sampleRate: parseInt(get('wavRate').value, 10),
+          channels: parseInt(get('wavCh').value, 10),
+          bitDepth: get('wavBits').value,
+          normalize: get('wavNorm').value,
+          dither: get('wavDither').value,
+          resample: get('wavResample').value
+        });
+        const buf = await blob.arrayBuffer();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        previewCtx = new AudioCtx();
+        const audio = await previewCtx.decodeAudioData(buf);
+        previewSource = previewCtx.createBufferSource();
+        const length = Math.min(audio.length, audio.sampleRate * 10);
+        const trimmed = previewCtx.createBuffer(audio.numberOfChannels, length, audio.sampleRate);
+        for (let c = 0; c < audio.numberOfChannels; c++) {
+          trimmed.copyToChannel(audio.getChannelData(c).subarray(0, length), c);
+        }
+        previewSource.buffer = trimmed;
+        previewSource.connect(previewCtx.destination);
+        previewSource.start(0);
+        previewSource.onended = () => { stopPreview(); };
+      } else {
+        const buf = await currentFile.arrayBuffer();
+        const blob = await convertWavToMp3(buf, { sampleRate: 44100, channels: 2, bitrate: 192 });
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        previewCtx = new AudioCtx();
+        const audio = await previewCtx.decodeAudioData(await blob.arrayBuffer());
+        previewSource = previewCtx.createBufferSource();
+        const length = Math.min(audio.length, audio.sampleRate * 10);
+        const trimmed = previewCtx.createBuffer(audio.numberOfChannels, length, audio.sampleRate);
+        for (let c = 0; c < audio.numberOfChannels; c++) {
+          trimmed.copyToChannel(audio.getChannelData(c).subarray(0, length), c);
+        }
+        previewSource.buffer = trimmed;
+        previewSource.connect(previewCtx.destination);
+        previewSource.start(0);
+        previewSource.onended = () => { stopPreview(); };
       }
-      src.buffer = trimmed;
-      src.connect(outCtx.destination);
-      src.start(0);
-      const rendered = await outCtx.startRendering();
-
-      previewCtx = new AudioCtx();
-      previewSource = previewCtx.createBufferSource();
-      previewSource.buffer = rendered;
-      previewSource.connect(previewCtx.destination);
-      previewSource.start(0);
-      previewSource.onended = () => { stopPreview(); };
     } catch(e) {
       stopPreview();
       showError(T[currentLang].wavError + e.message);
