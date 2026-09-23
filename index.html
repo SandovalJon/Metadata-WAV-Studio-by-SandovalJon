@@ -30,6 +30,11 @@
   body[data-theme="claro"] input[type="text"],
   body[data-theme="claro"] select { background: #fff; color: #212529; }
   body[data-theme="claro"] .particle { opacity: .06; }
+  body[data-theme="esmeralda"] {
+    --bg: #0a1f1a; --card: #0f2d25;
+    --text: #c8e6d8; --muted: #7ab89a; --border: #1a3a2a;
+    --accent: #3fb950; --danger: #f85149;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -864,6 +869,7 @@
       tituloApp: 'Audio Studio',
       temaOscuro: '🌙 Oscuro',
       temaClaro: '☀️ Claro',
+      temaEsmeralda: '💚 Esmeralda',
       bySandovalJon: 'by SandovalJon',
       arrastra: 'Arrastra tu archivo de audio aquí',
       oclic: 'o haz clic para seleccionar archivos (MP3/WAV)',
@@ -2370,12 +2376,22 @@
   };
 
   auth.onAuthStateChanged(user => {
+    const themeSel = document.getElementById('themeSelect');
+    const existingOpt = themeSel.querySelector('option[value="esmeralda"]');
+    const isOwner = user && user.email === 'jdss07@outlook.fr';
     if (user) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('userSection').style.display = 'flex';
       document.getElementById('userName').textContent = user.displayName;
       document.getElementById('userEmail').textContent = user.email;
       document.getElementById('userPhoto').src = user.photoURL;
+      if (isOwner && !existingOpt) {
+        const opt = document.createElement('option');
+        opt.value = 'esmeralda';
+        opt.setAttribute('data-i18n', 'temaEsmeralda');
+        opt.textContent = T[currentLang].temaEsmeralda || '💚 Esmeralda';
+        themeSel.appendChild(opt);
+      }
       const welcome = document.createElement('div');
       welcome.className = 'welcome-toast';
       welcome.textContent = (currentLang === 'es' ? 'Bienvenido, ' : 'Welcome, ') + user.displayName;
@@ -2384,8 +2400,13 @@
     } else {
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('userSection').style.display = 'none';
+      if (existingOpt) existingOpt.remove();
     }
-    setTheme(savedTheme);
+    if (!isOwner && savedTheme === 'esmeralda') {
+      setTheme('noche');
+    } else {
+      setTheme(savedTheme);
+    }
   });
   // ===== END FIREBASE AUTH =====
 
