@@ -272,6 +272,45 @@
   @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
   @keyframes drawCheck { to { stroke-dashoffset: 0; } }
 
+  /* Tooltips */
+  label[data-tip] {
+    position: relative;
+    cursor: help;
+  }
+  label[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: .7rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+    z-index: 10;
+  }
+  label[data-tip]:hover::after { opacity: 1; }
+
+  /* Char counter */
+  .char-counter {
+    font-size: .7rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  /* Cover drop on form */
+  .cover-drop-active {
+    border-color: var(--accent) !important;
+    background: rgba(88,166,255,.1) !important;
+  }
+
   .tab-bar {
     display: flex;
     gap: 0;
@@ -501,47 +540,48 @@
 
     <div class="tab-panel active" id="panelEdit">
       <fieldset>
-        <label for="title" data-i18n="labelTitulo">Título</label>
+        <label for="title" data-i18n="labelTitulo" data-tip="TIT2">Título</label>
         <input type="text" id="title">
 
-        <label for="artist" data-i18n="labelArtista">Artista</label>
+        <label for="artist" data-i18n="labelArtista" data-tip="TPE1">Artista</label>
         <input type="text" id="artist">
 
         <div class="row">
           <div>
-            <label for="album" data-i18n="labelAlbum">Álbum</label>
+            <label for="album" data-i18n="labelAlbum" data-tip="TALB">Álbum</label>
             <input type="text" id="album">
           </div>
           <div>
-            <label for="albumArtist" data-i18n="labelArtistaAlbum">Artista del álbum</label>
+            <label for="albumArtist" data-i18n="labelArtistaAlbum" data-tip="TPE2">Artista del álbum</label>
             <input type="text" id="albumArtist">
           </div>
         </div>
 
         <div class="row">
           <div>
-            <label for="year" data-i18n="labelAno">Año</label>
+            <label for="year" data-i18n="labelAno" data-tip="TYER">Año</label>
             <input type="text" id="year">
           </div>
           <div>
-            <label for="track" data-i18n="labelPista">Pista (número/total)</label>
+            <label for="track" data-i18n="labelPista" data-tip="TRCK">Pista (número/total)</label>
             <input type="text" id="track" placeholder="ej. 3/12">
           </div>
         </div>
 
         <div class="row">
           <div>
-            <label for="genre" data-i18n="labelGenero">Género</label>
+            <label for="genre" data-i18n="labelGenero" data-tip="TCON">Género</label>
             <input type="text" id="genre">
           </div>
           <div>
-            <label for="composer" data-i18n="labelCompositor">Compositor</label>
+            <label for="composer" data-i18n="labelCompositor" data-tip="TCOM">Compositor</label>
             <input type="text" id="composer">
           </div>
         </div>
 
-        <label for="comment" data-i18n="labelComentario">Comentario</label>
-        <input type="text" id="comment">
+        <label for="comment" data-i18n="labelComentario" data-tip="COMM">Comentario</label>
+        <input type="text" id="comment" maxlength="255">
+        <div class="char-counter"><span id="commentCount">0</span>/255</div>
 
         <label for="coverInput" data-i18n="labelPortada">Portada (opcional)</label>
         <button type="button" class="cover-btn" id="coverBtn" data-i18n="btnPortada">Añadir o arrastrar portada aquí (JPG/PNG)</button>
@@ -659,7 +699,7 @@
   <div id="successBox"></div>
 </main>
 
-<footer data-i18n="bySandovalJon">by SandovalJon</footer>
+<footer data-i18n="bySandovalJon">by SandovalJon</footer> <span id="versionFooter" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--muted);">v2.0</span>
 
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.js"></script>
@@ -2783,6 +2823,37 @@
   });
 
   get('coverInput').addEventListener('change', () => setCover(get('coverInput').files[0]));
+
+  // Char counter for comment
+  get('comment').addEventListener('input', () => {
+    document.getElementById('commentCount').textContent = get('comment').value.length;
+  });
+
+  // Drag & drop cover on form
+  form.addEventListener('dragover', e => {
+    if (e.dataTransfer.types.includes('Files')) {
+      const items = e.dataTransfer.items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          e.preventDefault();
+          form.classList.add('cover-drop-active');
+          return;
+        }
+      }
+    }
+  });
+  form.addEventListener('dragleave', () => form.classList.remove('cover-drop-active'));
+  form.addEventListener('drop', e => {
+    e.preventDefault();
+    form.classList.remove('cover-drop-active');
+    const files = e.dataTransfer.files;
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].type.startsWith('image/')) {
+        setCover(files[i]);
+        return;
+      }
+    }
+  });
 
   get('clearFields').addEventListener('click', () => {
     ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => setField(id, ''));
