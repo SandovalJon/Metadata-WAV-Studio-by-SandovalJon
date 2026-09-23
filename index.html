@@ -2794,6 +2794,17 @@
     showSuccess(currentLang === 'es' ? 'Campos limpiados.' : 'Fields cleared.');
   });
 
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'g') {
+      e.preventDefault();
+      if (currentFile) form.requestSubmit();
+    }
+    if (e.ctrlKey && e.key === 'l') {
+      e.preventDefault();
+      get('clearFields').click();
+    }
+  });
+
   get('cancelBtn').addEventListener('click', () => {
     form.style.display = 'none';
     fileInfo.style.display = 'none';
