@@ -22,10 +22,14 @@
     --danger: #f85149;
   }
   body[data-theme="claro"] {
-    --bg: #f5f5f5; --card: #fff;
-    --text: #1a1a1a; --muted: #666; --border: #ddd;
-    --accent: #2563eb; --danger: #dc2626;
+    --bg: #f8f9fa; --card: #fff;
+    --text: #212529; --muted: #6c757d; --border: #dee2e6;
+    --accent: #0d6efd; --danger: #dc3545;
   }
+  body[data-theme="claro"] .drop-zone { background: #fff; }
+  body[data-theme="claro"] input[type="text"],
+  body[data-theme="claro"] select { background: #fff; color: #212529; }
+  body[data-theme="claro"] .particle { opacity: .06; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -582,8 +586,8 @@
   <div class="header-progress"></div>
   <div class="lang-bar">
     <select id="themeSelect">
-      <option value="noche" data-i18n="temaOscuro">Oscuro</option>
-      <option value="claro" data-i18n="temaClaro">Claro</option>
+      <option value="noche" data-i18n="temaOscuro">🌙 Oscuro</option>
+      <option value="claro" data-i18n="temaClaro">☀️ Claro</option>
     </select>
     <select id="langSelect">
       <option value="en">English</option>
@@ -858,8 +862,8 @@
     es: {
       subtitulo: 'Edita metadatos, cambia portadas y convierte entre MP3 y WAV.',
       tituloApp: 'Audio Studio',
-      temaOscuro: 'Oscuro',
-      temaClaro: 'Claro',
+      temaOscuro: '🌙 Oscuro',
+      temaClaro: '☀️ Claro',
       bySandovalJon: 'by SandovalJon',
       arrastra: 'Arrastra tu archivo de audio aquí',
       oclic: 'o haz clic para seleccionar archivos (MP3/WAV)',
@@ -2290,6 +2294,7 @@
     document.querySelector('.tab-btn[data-tab="' + tabName + '"]').classList.add('active');
     document.getElementById('panel' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
     save('lastTab', tabName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -3178,6 +3183,48 @@
   });
   // ===== END LANG SEARCH =====
 
+  // ===== SHORTCUTS MODAL =====
+  function showShortcuts() {
+    if (document.getElementById('shortcutsModal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'shortcutsModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn .2s ease;';
+    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+    const box = document.createElement('div');
+    box.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.4);';
+    const shortcuts = [
+      ['Ctrl+G', currentLang === 'es' ? 'Guardar' : 'Save'],
+      ['Ctrl+L', currentLang === 'es' ? 'Limpiar' : 'Clear'],
+      ['Ctrl+Z', 'Undo'],
+      ['Ctrl+Y', 'Redo'],
+      ['Esc', currentLang === 'es' ? 'Cerrar form' : 'Close form'],
+      ['Dblclick', currentLang === 'es' ? 'Resetear campo' : 'Reset field']
+    ];
+    box.innerHTML = '<h3 style="margin:0 0 12px;font-size:1rem;color:var(--text);">' + (currentLang === 'es' ? 'Atajos de teclado' : 'Keyboard shortcuts') + '</h3>' +
+      shortcuts.map(s => '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;"><code style="background:var(--bg);padding:2px 8px;border-radius:4px;font-size:.8rem;">' + s[0] + '</code><span style="color:var(--muted);">' + s[1] + '</span></div>').join('') +
+      '<button onclick="this.closest(\'#shortcutsModal\').remove()" style="margin-top:12px;width:100%;padding:8px;border:none;border-radius:6px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">OK</button>';
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === '?') {
+      e.preventDefault();
+      showShortcuts();
+    }
+  });
+  // ===== END SHORTCUTS MODAL =====
+
+  // ===== WINDOW SIZE =====
+  if (load('windowSize')) {
+    const ws = load('windowSize');
+    try { window.resizeTo(ws.w, ws.h); } catch(e) {}
+  }
+  window.addEventListener('resize', () => {
+    save('windowSize', { w: window.outerWidth, h: window.outerHeight });
+  });
+  // ===== END WINDOW SIZE =====
+
   get('cancelBtn').addEventListener('click', () => {
     form.style.display = 'none';
     fileInfo.style.display = 'none';
@@ -3238,6 +3285,12 @@
       showError(T[currentLang].soloMp3);
       return;
     }
+
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'skeleton-overlay';
+    loadingOverlay.innerHTML = '<div class="skeleton-box"><div class="skeleton-spinner"></div><div class="skeleton-text">' + (currentLang === 'es' ? 'Cargando archivo...' : 'Loading file...') + '</div></div>';
+    document.body.appendChild(loadingOverlay);
+
     currentFile = file;
     currentFileType = isWav ? 'wav' : 'mp3';
 
@@ -3329,6 +3382,7 @@
 
     form.style.display = 'block';
     dropZone.style.display = 'none';
+    loadingOverlay.remove();
     setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   }
 
