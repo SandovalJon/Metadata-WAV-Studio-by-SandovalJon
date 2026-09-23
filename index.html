@@ -116,7 +116,7 @@
     animation: fadeSlideIn .2s ease;
   }
   .preview img {
-    width: 64px; height: 64px; object-fit: cover;
+    width: 96px; height: 96px; object-fit: cover;
     border-radius: 8px; border: 1px solid var(--border);
   }
   .cover-note {
@@ -304,6 +304,17 @@
     text-align: right;
     margin-top: 2px;
   }
+
+  /* Required field */
+  .field-required::after {
+    content: ' *';
+    color: var(--danger);
+    font-weight: 700;
+  }
+
+  /* Field wrapper */
+  .field-wrap { position: relative; }
+  .field-wrap input { width: 100%; }
 
   /* Cover drop on form */
   .cover-drop-active {
@@ -540,48 +551,62 @@
 
     <div class="tab-panel active" id="panelEdit">
       <fieldset>
-        <label for="title" data-i18n="labelTitulo" data-tip="TIT2">Título</label>
-        <input type="text" id="title">
+        <div class="field-wrap">
+          <label for="title" data-i18n="labelTitulo" data-tip="TIT2" class="field-required">Título</label>
+          <input type="text" id="title" maxlength="255">
+          <div class="char-counter"><span class="field-count" data-for="title">0</span>/255</div>
+        </div>
 
-        <label for="artist" data-i18n="labelArtista" data-tip="TPE1">Artista</label>
-        <input type="text" id="artist">
+        <div class="field-wrap">
+          <label for="artist" data-i18n="labelArtista" data-tip="TPE1">Artista</label>
+          <input type="text" id="artist" maxlength="255">
+          <div class="char-counter"><span class="field-count" data-for="artist">0</span>/255</div>
+        </div>
 
         <div class="row">
-          <div>
+          <div class="field-wrap">
             <label for="album" data-i18n="labelAlbum" data-tip="TALB">Álbum</label>
-            <input type="text" id="album">
+            <input type="text" id="album" maxlength="255">
+            <div class="char-counter"><span class="field-count" data-for="album">0</span>/255</div>
           </div>
-          <div>
+          <div class="field-wrap">
             <label for="albumArtist" data-i18n="labelArtistaAlbum" data-tip="TPE2">Artista del álbum</label>
-            <input type="text" id="albumArtist">
+            <input type="text" id="albumArtist" maxlength="255">
+            <div class="char-counter"><span class="field-count" data-for="albumArtist">0</span>/255</div>
           </div>
         </div>
 
         <div class="row">
-          <div>
+          <div class="field-wrap">
             <label for="year" data-i18n="labelAno" data-tip="TYER">Año</label>
-            <input type="text" id="year">
+            <input type="text" id="year" maxlength="4">
+            <div class="char-counter"><span class="field-count" data-for="year">0</span>/4</div>
           </div>
-          <div>
+          <div class="field-wrap">
             <label for="track" data-i18n="labelPista" data-tip="TRCK">Pista (número/total)</label>
-            <input type="text" id="track" placeholder="ej. 3/12">
+            <input type="text" id="track" placeholder="ej. 3/12" maxlength="7">
+            <div class="char-counter"><span class="field-count" data-for="track">0</span>/7</div>
           </div>
         </div>
 
         <div class="row">
-          <div>
+          <div class="field-wrap">
             <label for="genre" data-i18n="labelGenero" data-tip="TCON">Género</label>
-            <input type="text" id="genre">
+            <input type="text" id="genre" maxlength="255">
+            <div class="char-counter"><span class="field-count" data-for="genre">0</span>/255</div>
           </div>
-          <div>
+          <div class="field-wrap">
             <label for="composer" data-i18n="labelCompositor" data-tip="TCOM">Compositor</label>
-            <input type="text" id="composer">
+            <input type="text" id="composer" maxlength="255">
+            <div class="char-counter"><span class="field-count" data-for="composer">0</span>/255</div>
           </div>
         </div>
 
-        <label for="comment" data-i18n="labelComentario" data-tip="COMM">Comentario</label>
-        <input type="text" id="comment" maxlength="255">
-        <div class="char-counter"><span id="commentCount">0</span>/255</div>
+        <div class="field-wrap">
+          <label for="comment" data-i18n="labelComentario" data-tip="COMM">Comentario</label>
+          <input type="text" id="comment" maxlength="255">
+          <div class="char-counter"><span class="field-count" data-for="comment">0</span>/255</div>
+        </div>
 
         <label for="coverInput" data-i18n="labelPortada">Portada (opcional)</label>
         <button type="button" class="cover-btn" id="coverBtn" data-i18n="btnPortada">Añadir o arrastrar portada aquí (JPG/PNG)</button>
@@ -2824,9 +2849,22 @@
 
   get('coverInput').addEventListener('change', () => setCover(get('coverInput').files[0]));
 
-  // Char counter for comment
-  get('comment').addEventListener('input', () => {
-    document.getElementById('commentCount').textContent = get('comment').value.length;
+  // Char counters for all fields
+  document.querySelectorAll('.field-count').forEach(el => {
+    const input = document.getElementById(el.dataset.for);
+    if (input) {
+      el.textContent = input.value.length;
+      input.addEventListener('input', () => { el.textContent = input.value.length; });
+    }
+  });
+
+  // Double click to reset any field
+  document.querySelectorAll('#panelEdit input[type="text"]').forEach(input => {
+    input.addEventListener('dblclick', () => {
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+    });
   });
 
   // Drag & drop cover on form
@@ -2856,7 +2894,13 @@
   });
 
   get('clearFields').addEventListener('click', () => {
-    ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => setField(id, ''));
+    const msg = currentLang === 'es' ? '¿Limpiar todos los campos?' : 'Clear all fields?';
+    if (!confirm(msg)) return;
+    ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => {
+      setField(id, '');
+      const counter = document.querySelector('.field-count[data-for="' + id + '"]');
+      if (counter) counter.textContent = '0';
+    });
     coverBlob = null;
     coverPending = null;
     get('coverPreview').style.display = 'none';
