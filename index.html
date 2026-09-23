@@ -425,7 +425,7 @@
 <body>
 
 <header>
-  <h1>Audio Studio</h1>
+  <h1 data-i18n="tituloApp">Audio Studio</h1>
   <div class="auth-bar">
     <div id="loginSection">
       <button class="auth-btn" data-i18n="btnIniciar" onclick="doLogin()">Iniciar con Google</button>
@@ -439,8 +439,8 @@
   <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte entre MP3 y WAV.</p>
   <div class="lang-bar">
     <select id="themeSelect">
-      <option value="noche">Noche</option>
-      <option value="atardecer">Atardecer</option>
+      <option value="noche" data-i18n="temaNoche">Noche</option>
+      <option value="atardecer" data-i18n="temaAtardecer">Atardecer</option>
     </select>
     <select id="langSelect">
       <option value="en">English</option>
@@ -659,7 +659,7 @@
   <div id="successBox"></div>
 </main>
 
-<footer>by SandovalJon</footer>
+<footer data-i18n="bySandovalJon">by SandovalJon</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.js"></script>
@@ -697,6 +697,11 @@
   const T = {
     es: {
       subtitulo: 'Edita metadatos, cambia portadas y convierte entre MP3 y WAV.',
+      tituloApp: 'Audio Studio',
+      temaNoche: 'Noche',
+      temaAtardecer: 'Atardecer',
+      temaEsmeralda: 'Esmeralda',
+      bySandovalJon: 'by SandovalJon',
       arrastra: 'Arrastra tu archivo de audio aquí',
       oclic: 'o haz clic para seleccionar archivos (MP3/WAV)',
       archivo: 'Archivo:',
@@ -759,6 +764,11 @@
     },
     en: {
       subtitulo: 'Edit metadata, change covers and convert between MP3 and WAV.',
+      tituloApp: 'Audio Studio',
+      temaNoche: 'Night',
+      temaAtardecer: 'Sunset',
+      temaEsmeralda: 'Emerald',
+      bySandovalJon: 'by SandovalJon',
       arrastra: 'Drag your audio file here',
       oclic: 'or click to select files (MP3/WAV)',
       archivo: 'File:',
@@ -823,6 +833,11 @@
     },
     pt: {
       subtitulo: 'Edite metadatos, troque capas e converta entre MP3 e WAV.',
+      tituloApp: 'Audio Studio',
+      temaNoche: 'Noite',
+      temaAtardecer: 'Entardecer',
+      temaEsmeralda: 'Esmeralda',
+      bySandovalJon: 'by SandovalJon',
       arrastra: 'Arraste seu arquivo de áudio aqui',
       oclic: 'ou clique para selecionar arquivos (MP3/WAV)',
       arquivo: 'Arquivo:',
@@ -1980,6 +1995,10 @@
       const key = el.getAttribute('data-i18n');
       el.textContent = T[lang][key] || key;
     });
+    document.querySelectorAll('select[data-i18n] option[data-i18n]').forEach(opt => {
+      const key = opt.getAttribute('data-i18n');
+      opt.textContent = T[lang][key] || key;
+    });
   }
 
   document.getElementById('langSelect').addEventListener('change', e => setLanguage(e.target.value));
@@ -2073,7 +2092,7 @@
       if (isOwner && !existingOpt) {
         const opt = document.createElement('option');
         opt.value = 'esmeralda';
-        opt.textContent = 'Esmeralda';
+        opt.textContent = T[currentLang].temaEsmeralda || 'Esmeralda';
         themeSel.insertBefore(opt, themeSel.querySelector('option[value="atardecer"]'));
       }
     } else {
