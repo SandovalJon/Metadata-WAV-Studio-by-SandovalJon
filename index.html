@@ -2202,6 +2202,7 @@
       if (isOwner && !existingOpt) {
         const opt = document.createElement('option');
         opt.value = 'esmeralda';
+        opt.setAttribute('data-i18n', 'temaEsmeralda');
         opt.textContent = T[currentLang].temaEsmeralda || 'Esmeralda';
         themeSel.insertBefore(opt, themeSel.querySelector('option[value="atardecer"]'));
       }
