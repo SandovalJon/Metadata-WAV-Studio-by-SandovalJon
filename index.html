@@ -42,6 +42,8 @@
   header {
     padding: clamp(12px, 4vw, 24px) clamp(12px, 4vw, 24px) 8px;
     text-align: center;
+    background: linear-gradient(135deg, rgba(88,166,255,.08) 0%, transparent 50%, rgba(63,185,80,.06) 100%);
+    border-radius: 0 0 16px 16px;
   }
   header h1 { margin: 0; font-size: clamp(1.2rem, 4vw, 1.6rem); }
   header p { color: var(--muted); margin: 6px 0 0; font-size: clamp(.8rem, 2.5vw, .9rem); }
@@ -347,7 +349,11 @@
     border-bottom-color: var(--accent);
   }
   .tab-panel { display: none; }
-  .tab-panel.active { display: block; animation: fadeSlideIn .2s ease; }
+  .tab-panel.active { display: block; animation: tabIn .3s ease; }
+  @keyframes tabIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   @media (max-width: 600px) {
     .row { flex-direction: column; gap: 0; }
@@ -411,7 +417,8 @@
   }
   button:hover { filter: brightness(1.1); }
   button:active:not(:disabled) { transform: scale(.97); }
-  .btn-download { background: var(--accent); color: #fff; }
+  .btn-download { background: var(--accent); color: #fff; box-shadow: 0 0 16px rgba(88,166,255,.25); }
+  .btn-download:hover { box-shadow: 0 0 24px rgba(88,166,255,.4); }
   .btn-cancel { background: #333; color: var(--text); }
 
   #errorBox, #successBox { display: none; }
@@ -2181,14 +2188,20 @@
   setLanguage(currentLang);
 
   // ===== TABS =====
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('.tab-btn[data-tab="' + tabName + '"]').classList.add('active');
+    document.getElementById('panel' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+    save('lastTab', tabName);
+  }
+
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('panel' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
-    });
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
+
+  const lastTab = load('lastTab', 'edit');
+  switchTab(lastTab);
   // ===== END TABS =====
 
   // ===== THEME =====
@@ -2932,6 +2945,45 @@
     if (e.key === 'Escape' && currentFile) {
       get('cancelBtn').click();
     }
+  });
+
+  // Click outside form to close
+  document.addEventListener('click', e => {
+    if (!currentFile) return;
+    if (form.style.display === 'none') return;
+    if (!form.contains(e.target) && !fileInfo.contains(e.target) && !dropZone.contains(e.target)) {
+      const isTab = e.target.closest('.tab-btn');
+      const isLang = e.target.closest('#langSelect');
+      const isTheme = e.target.closest('#themeSelect');
+      const isAuth = e.target.closest('.auth-bar');
+      if (!isTab && !isLang && !isTheme && !isAuth) {
+        get('cancelBtn').click();
+      }
+    }
+  });
+
+  // Auto-save field values
+  function autoSaveFields() {
+    const fields = {};
+    ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => {
+      fields[id] = get(id).value;
+    });
+    save('draftFields', fields);
+  }
+
+  function autoLoadFields() {
+    const draft = load('draftFields');
+    if (draft) {
+      for (const id in draft) {
+        if (draft[id]) setField(id, draft[id]);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => {
+    get(id).addEventListener('input', autoSaveFields);
   });
 
   function loadFile(file) {
