@@ -515,8 +515,19 @@
     transition: all .2s; font-weight: 600;
   }
   .auth-btn:hover { border-color: var(--accent); color: var(--text); }
-  .user-info { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: .85rem; }
-  .user-info img { border-radius: 50%; border: 1px solid var(--border); }
+  .user-info { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: .85rem; animation: fadeSlideIn .3s ease; }
+  .user-info img { border-radius: 50%; border: 2px solid var(--accent); width: 36px; height: 36px; object-fit: cover; transition: transform .2s; }
+  .user-info img:hover { transform: scale(1.1); }
+  .user-email { font-size: .7rem; color: var(--muted); }
+  .welcome-toast {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; padding: 10px 24px;
+    border-radius: 8px; font-size: .9rem; font-weight: 600;
+    z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    animation: toastIn .3s ease, toastOut .3s ease 2.5s forwards;
+  }
+  .auth-btn.logout { color: var(--danger); border-color: var(--danger); }
+  .auth-btn.logout:hover { background: rgba(248,81,73,.1); }
 
   /* Toast notifications */
   .toast {
@@ -564,9 +575,12 @@
       <button class="auth-btn" data-i18n="btnIniciar" onclick="doLogin()">Iniciar con Google</button>
     </div>
     <div id="userSection" class="user-info" style="display:none">
-      <img id="userPhoto" width="32">
-      <span id="userName"></span>
-      <button class="auth-btn" data-i18n="btnCerrar" onclick="doLogout()">Cerrar</button>
+      <img id="userPhoto" width="36">
+      <div>
+        <span id="userName"></span>
+        <div class="user-email" id="userEmail"></div>
+      </div>
+      <button class="auth-btn logout" data-i18n="btnCerrar" onclick="doLogout()">Cerrar</button>
     </div>
   </div>
   <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte entre MP3 y WAV.</p>
@@ -2353,7 +2367,8 @@
   };
 
   window.doLogout = function () {
-    auth.signOut();
+    const msg = currentLang === 'es' ? '¿Cerrar sesión?' : 'Sign out?';
+    if (confirm(msg)) auth.signOut();
   };
 
   auth.onAuthStateChanged(user => {
@@ -2365,6 +2380,7 @@
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('userSection').style.display = 'flex';
       document.getElementById('userName').textContent = user.displayName;
+      document.getElementById('userEmail').textContent = user.email;
       document.getElementById('userPhoto').src = user.photoURL;
       if (isOwner && !existingOpt) {
         const opt = document.createElement('option');
@@ -2373,6 +2389,11 @@
         opt.textContent = T[currentLang].temaEsmeralda || 'Esmeralda';
         themeSel.insertBefore(opt, themeSel.querySelector('option[value="atardecer"]'));
       }
+      const welcome = document.createElement('div');
+      welcome.className = 'welcome-toast';
+      welcome.textContent = (currentLang === 'es' ? 'Bienvenido, ' : 'Welcome, ') + user.displayName;
+      document.body.appendChild(welcome);
+      setTimeout(() => welcome.remove(), 3000);
     } else {
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('userSection').style.display = 'none';
