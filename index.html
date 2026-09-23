@@ -811,9 +811,6 @@
     </div>
 
     <div class="actions" style="gap:8px;">
-      <button type="button" class="btn-cancel ripple" id="copyMetaBtn" style="flex:0 0 auto;padding:8px 12px;font-size:.8rem;">📋</button>
-      <button type="button" class="btn-cancel ripple" id="exportJsonBtn" style="flex:0 0 auto;padding:8px 12px;font-size:.8rem;">💾</button>
-      <button type="button" class="btn-cancel ripple" id="compactToggle" style="flex:0 0 auto;padding:8px 12px;font-size:.8rem;">📐</button>
       <button type="submit" class="btn-download ripple" id="saveBtn" data-i18n="btnGuardar">Guardar y descargar</button>
       <button type="button" class="btn-cancel ripple" id="cancelBtn" data-i18n="btnCancelar">Cancelar</button>
     </div>
@@ -3079,59 +3076,6 @@
     setTheme('noche');
   }
   // ===== END AUTO DARK MODE =====
-
-  // ===== EXPORT/IMPORT JSON =====
-  document.getElementById('exportJsonBtn').addEventListener('click', () => {
-    const data = {
-      title: get('title').value,
-      artist: get('artist').value,
-      album: get('album').value,
-      albumArtist: get('albumArtist').value,
-      year: get('year').value,
-      track: get('track').value,
-      genre: get('genre').value,
-      composer: get('composer').value,
-      comment: get('comment').value
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = (data.title || 'metadata') + '.json';
-    a.click();
-    showSuccess(currentLang === 'es' ? 'Metadatos exportados.' : 'Metadata exported.');
-  });
-  // ===== END EXPORT =====
-
-  // ===== COPY METADATA =====
-  document.getElementById('copyMetaBtn').addEventListener('click', async () => {
-    const text = [
-      'Title: ' + get('title').value,
-      'Artist: ' + get('artist').value,
-      'Album: ' + get('album').value,
-      'Album Artist: ' + get('albumArtist').value,
-      'Year: ' + get('year').value,
-      'Track: ' + get('track').value,
-      'Genre: ' + get('genre').value,
-      'Composer: ' + get('composer').value,
-      'Comment: ' + get('comment').value
-    ].join('\n');
-    await navigator.clipboard.writeText(text);
-    const toast = document.createElement('div');
-    toast.className = 'copy-toast';
-    toast.textContent = currentLang === 'es' ? 'Copiado al portapapeles' : 'Copied to clipboard';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-  });
-  // ===== END COPY =====
-
-  // ===== COMPACT MODE =====
-  const compactToggle = document.getElementById('compactToggle');
-  if (load('compactMode')) document.body.classList.add('compact');
-  compactToggle.addEventListener('click', () => {
-    document.body.classList.toggle('compact');
-    save('compactMode', document.body.classList.contains('compact'));
-  });
-  // ===== END COMPACT =====
 
   // ===== RIPPLE EFFECT =====
   document.addEventListener('click', e => {
