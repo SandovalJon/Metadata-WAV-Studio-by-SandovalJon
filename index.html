@@ -324,6 +324,81 @@
     background: rgba(88,166,255,.1) !important;
   }
 
+  /* Particles background */
+  #particles {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: var(--accent);
+    border-radius: 50%;
+    opacity: .15;
+    animation: float linear infinite;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: .15; }
+    90% { opacity: .15; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* Header progress bar */
+  .header-progress {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    background-size: 200% 100%;
+    animation: headerShine 3s ease infinite;
+    margin: 8px 0 0;
+    border-radius: 1px;
+  }
+  @keyframes headerShine {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Ripple effect */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  .ripple-wave {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,.3);
+    transform: scale(0);
+    animation: rippleAnim .5s ease-out;
+    pointer-events: none;
+  }
+  @keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* Copy notification */
+  .copy-toast {
+    position: fixed;
+    bottom: 70px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: .85rem;
+    font-weight: 600;
+    z-index: 9999;
+    animation: toastIn .2s ease, toastOut .2s ease 1.5s forwards;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  }
+
+  /* Compact mode */
+  body.compact label { margin: 6px 0 2px; font-size: .75rem; }
+  body.compact input[type="text"] { padding: 7px 10px; font-size: .85rem; }
+  body.compact .row { gap: 8px; }
+  body.compact select { padding: 7px 10px; font-size: .85rem; }
+
   .tab-bar {
     display: flex;
     gap: 0;
@@ -480,6 +555,7 @@
 </style>
 </head>
 <body>
+<div id="particles"></div>
 
 <header>
   <h1 data-i18n="tituloApp">Audio Studio</h1>
@@ -494,6 +570,7 @@
     </div>
   </div>
   <p data-i18n="subtitulo">Edita metadatos, cambia portadas y convierte entre MP3 y WAV.</p>
+  <div class="header-progress"></div>
   <div class="lang-bar">
     <select id="themeSelect">
       <option value="noche" data-i18n="temaNoche">Noche</option>
@@ -721,9 +798,12 @@
       </div>
     </div>
 
-    <div class="actions">
-      <button type="submit" class="btn-download" id="saveBtn" data-i18n="btnGuardar">Guardar y descargar</button>
-      <button type="button" class="btn-cancel" id="cancelBtn" data-i18n="btnCancelar">Cancelar</button>
+    <div class="actions" style="gap:8px;">
+      <button type="button" class="btn-cancel ripple" id="copyMetaBtn" style="flex:0 0 auto;padding:8px 12px;font-size:.8rem;">📋</button>
+      <button type="button" class="btn-cancel ripple" id="exportJsonBtn" style="flex:0 0 auto;padding:8px 12px;font-size:.8rem;">💾</button>
+      <button type="button" class="btn-cancel ripple" id="compactToggle" style="flex:0 0 auto;padding:8px 12px;font-size:.8rem;">📐</button>
+      <button type="submit" class="btn-download ripple" id="saveBtn" data-i18n="btnGuardar">Guardar y descargar</button>
+      <button type="button" class="btn-cancel ripple" id="cancelBtn" data-i18n="btnCancelar">Cancelar</button>
     </div>
   </form>
 
@@ -814,6 +894,9 @@
       btnCerrar: 'Cerrar',
       btnLimpiar: 'Limpiar campos',
       archivoListo: 'Archivo listo',
+      btnCopiar: 'Copiar metadatos',
+      btnExportar: 'Exportar JSON',
+      btnCompacto: 'Modo compacto',
       btnPresetSave: 'Guardar',
       btnPresetReset: 'Reset',
       btnPresetDel: 'Eliminar',
@@ -884,6 +967,9 @@
       btnCerrar: 'Sign out',
       btnLimpiar: 'Clear fields',
       archivoListo: 'File ready',
+      btnCopiar: 'Copy metadata',
+      btnExportar: 'Export JSON',
+      btnCompacto: 'Compact mode',
       btnPresetSave: 'Save',
       btnPresetDel: 'Delete',
       soloMp3: 'Only MP3 and WAV formats are supported.',
@@ -953,6 +1039,9 @@
       btnCerrar: 'Sair',
       btnLimpiar: 'Limpar campos',
       archivoListo: 'Arquivo pronto',
+      btnCopiar: 'Copiar metadados',
+      btnExportar: 'Exportar JSON',
+      btnCompacto: 'Modo compacto',
       btnPresetSave: 'Salvar',
       btnPresetDel: 'Excluir',
       soloMp3: 'Somente os formatos MP3 e WAV são aceitos.',
@@ -2931,7 +3020,165 @@
       e.preventDefault();
       get('clearFields').click();
     }
+    if (e.ctrlKey && e.key === 'z') {
+      e.preventDefault();
+      undoField();
+    }
+    if (e.ctrlKey && e.key === 'y') {
+      e.preventDefault();
+      redoField();
+    }
   });
+
+  // ===== UNDO/REDO =====
+  const undoStack = {};
+  const redoStack = {};
+  ['title', 'artist', 'album', 'albumArtist', 'year', 'track', 'genre', 'composer', 'comment'].forEach(id => {
+    undoStack[id] = [];
+    redoStack[id] = [];
+    get(id).addEventListener('input', () => {
+      undoStack[id].push(get(id).value);
+      redoStack[id] = [];
+      if (undoStack[id].length > 50) undoStack[id].shift();
+    });
+    get(id).addEventListener('focus', () => {
+      undoStack[id].push(get(id).value);
+    });
+  });
+
+  function undoField() {
+    const focused = document.activeElement;
+    if (!focused || !focused.id || !undoStack[focused.id]) return;
+    const stack = undoStack[focused.id];
+    if (stack.length < 2) return;
+    redoStack[focused.id].push(stack.pop());
+    focused.value = stack[stack.length - 1] || '';
+    focused.dispatchEvent(new Event('input'));
+  }
+
+  function redoField() {
+    const focused = document.activeElement;
+    if (!focused || !focused.id || !redoStack[focused.id]) return;
+    const stack = redoStack[focused.id];
+    if (stack.length === 0) return;
+    const val = stack.pop();
+    undoStack[focused.id].push(val);
+    focused.value = val;
+    focused.dispatchEvent(new Event('input'));
+  }
+  // ===== END UNDO/REDO =====
+
+  // ===== AUTO DARK MODE =====
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && !load('theme')) {
+    setTheme('noche');
+  }
+  // ===== END AUTO DARK MODE =====
+
+  // ===== EXPORT/IMPORT JSON =====
+  document.getElementById('exportJsonBtn').addEventListener('click', () => {
+    const data = {
+      title: get('title').value,
+      artist: get('artist').value,
+      album: get('album').value,
+      albumArtist: get('albumArtist').value,
+      year: get('year').value,
+      track: get('track').value,
+      genre: get('genre').value,
+      composer: get('composer').value,
+      comment: get('comment').value
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (data.title || 'metadata') + '.json';
+    a.click();
+    showSuccess(currentLang === 'es' ? 'Metadatos exportados.' : 'Metadata exported.');
+  });
+  // ===== END EXPORT =====
+
+  // ===== COPY METADATA =====
+  document.getElementById('copyMetaBtn').addEventListener('click', async () => {
+    const text = [
+      'Title: ' + get('title').value,
+      'Artist: ' + get('artist').value,
+      'Album: ' + get('album').value,
+      'Album Artist: ' + get('albumArtist').value,
+      'Year: ' + get('year').value,
+      'Track: ' + get('track').value,
+      'Genre: ' + get('genre').value,
+      'Composer: ' + get('composer').value,
+      'Comment: ' + get('comment').value
+    ].join('\n');
+    await navigator.clipboard.writeText(text);
+    const toast = document.createElement('div');
+    toast.className = 'copy-toast';
+    toast.textContent = currentLang === 'es' ? 'Copiado al portapapeles' : 'Copied to clipboard';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  });
+  // ===== END COPY =====
+
+  // ===== COMPACT MODE =====
+  const compactToggle = document.getElementById('compactToggle');
+  if (load('compactMode')) document.body.classList.add('compact');
+  compactToggle.addEventListener('click', () => {
+    document.body.classList.toggle('compact');
+    save('compactMode', document.body.classList.contains('compact'));
+  });
+  // ===== END COMPACT =====
+
+  // ===== RIPPLE EFFECT =====
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.ripple');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const wave = document.createElement('span');
+    wave.className = 'ripple-wave';
+    wave.style.left = x + 'px';
+    wave.style.top = y + 'px';
+    wave.style.width = wave.style.height = Math.max(rect.width, rect.height) + 'px';
+    btn.appendChild(wave);
+    setTimeout(() => wave.remove(), 600);
+  });
+  // ===== END RIPPLE =====
+
+  // ===== PARTICLES =====
+  (function initParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (10 + Math.random() * 20) + 's';
+      p.style.animationDelay = Math.random() * 20 + 's';
+      p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+      container.appendChild(p);
+    }
+  })();
+  // ===== END PARTICLES =====
+
+  // ===== LANG SEARCH =====
+  const langSelect = document.getElementById('langSelect');
+  let searchBuf = '';
+  let searchTimeout;
+  langSelect.addEventListener('keydown', e => {
+    if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      clearTimeout(searchTimeout);
+      searchBuf += e.key.toLowerCase();
+      const opts = langSelect.options;
+      for (let i = 0; i < opts.length; i++) {
+        if (opts[i].text.toLowerCase().startsWith(searchBuf)) {
+          langSelect.selectedIndex = i;
+          langSelect.dispatchEvent(new Event('change'));
+          break;
+        }
+      }
+      searchTimeout = setTimeout(() => { searchBuf = ''; }, 800);
+    }
+  });
+  // ===== END LANG SEARCH =====
 
   get('cancelBtn').addEventListener('click', () => {
     form.style.display = 'none';
