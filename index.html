@@ -21,15 +21,10 @@
     --accent: #58a6ff;
     --danger: #f85149;
   }
-  body[data-theme="esmeralda"] {
-    --bg: #0a1f1a; --card: #0f2d25;
-    --text: #c8e6d8; --muted: #7ab89a; --border: #1a3a2a;
-    --accent: #3fb950; --danger: #f85149;
-  }
-  body[data-theme="atardecer"] {
-    --bg: #1a0f0a; --card: #2a1a12;
-    --text: #f0ddd0; --muted: #c09a80; --border: #3d2a1a;
-    --accent: #ff8c42; --danger: #f85149;
+  body[data-theme="claro"] {
+    --bg: #f5f5f5; --card: #fff;
+    --text: #1a1a1a; --muted: #666; --border: #ddd;
+    --accent: #2563eb; --danger: #dc2626;
   }
   * { box-sizing: border-box; }
   body {
@@ -587,8 +582,8 @@
   <div class="header-progress"></div>
   <div class="lang-bar">
     <select id="themeSelect">
-      <option value="noche" data-i18n="temaNoche">Noche</option>
-      <option value="atardecer" data-i18n="temaAtardecer">Atardecer</option>
+      <option value="noche" data-i18n="temaOscuro">Oscuro</option>
+      <option value="claro" data-i18n="temaClaro">Claro</option>
     </select>
     <select id="langSelect">
       <option value="en">English</option>
@@ -863,9 +858,8 @@
     es: {
       subtitulo: 'Edita metadatos, cambia portadas y convierte entre MP3 y WAV.',
       tituloApp: 'Audio Studio',
-      temaNoche: 'Noche',
-      temaAtardecer: 'Atardecer',
-      temaEsmeralda: 'Esmeralda',
+      temaOscuro: 'Oscuro',
+      temaClaro: 'Claro',
       bySandovalJon: 'by SandovalJon',
       arrastra: 'Arrastra tu archivo de audio aquí',
       oclic: 'o haz clic para seleccionar archivos (MP3/WAV)',
@@ -2371,22 +2365,12 @@
   };
 
   auth.onAuthStateChanged(user => {
-    const themeSel = document.getElementById('themeSelect');
-    const existingOpt = themeSel.querySelector('option[value="esmeralda"]');
-    const isOwner = user && user.email === 'jdss07@outlook.fr';
     if (user) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('userSection').style.display = 'flex';
       document.getElementById('userName').textContent = user.displayName;
       document.getElementById('userEmail').textContent = user.email;
       document.getElementById('userPhoto').src = user.photoURL;
-      if (isOwner && !existingOpt) {
-        const opt = document.createElement('option');
-        opt.value = 'esmeralda';
-        opt.setAttribute('data-i18n', 'temaEsmeralda');
-        opt.textContent = T[currentLang].temaEsmeralda || 'Esmeralda';
-        themeSel.insertBefore(opt, themeSel.querySelector('option[value="atardecer"]'));
-      }
       const welcome = document.createElement('div');
       welcome.className = 'welcome-toast';
       welcome.textContent = (currentLang === 'es' ? 'Bienvenido, ' : 'Welcome, ') + user.displayName;
@@ -2395,13 +2379,8 @@
     } else {
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('userSection').style.display = 'none';
-      if (existingOpt) existingOpt.remove();
     }
-    if (!isOwner && savedTheme === 'esmeralda') {
-      setTheme('noche');
-    } else {
-      setTheme(savedTheme);
-    }
+    setTheme(savedTheme);
   });
   // ===== END FIREBASE AUTH =====
 
