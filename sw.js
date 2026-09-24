@@ -1,4 +1,5 @@
 const CACHE = 'audio-studio-v3';
+const VERSION = 'v2.1.0';
 const ASSETS = [
   './',
   './index.html',
@@ -22,6 +23,9 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
   );
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => client.postMessage({ type: 'SW_UPDATED', version: VERSION }));
+  });
   self.clients.claim();
 });
 
