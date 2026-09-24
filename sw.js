@@ -1,4 +1,4 @@
-const CACHE = 'audio-studio-v2';
+const CACHE = 'audio-studio-v3';
 const ASSETS = [
   './',
   './index.html',
