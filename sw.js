@@ -25,6 +25,12 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+self.addEventListener('message', e => {
+  if (e.data && e.data.skipWaiting) {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
