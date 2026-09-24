@@ -42,6 +42,8 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
   header {
     padding: clamp(12px, 4vw, 24px) clamp(12px, 4vw, 24px) 8px;
@@ -51,7 +53,7 @@
   }
   header h1 { margin: 0; font-size: clamp(1.2rem, 4vw, 1.6rem); }
   header p { color: var(--muted); margin: 6px 0 0; font-size: clamp(.8rem, 2.5vw, .9rem); }
-  main { max-width: 720px; margin: 0 auto; padding: clamp(10px, 3vw, 16px) clamp(12px, 4vw, 24px) 20px; }
+  main { max-width: 720px; margin: 0 auto; padding: clamp(10px, 3vw, 16px) clamp(12px, 4vw, 24px) 20px; flex: 1; }
 
   .drop-zone {
     border: 2px dashed var(--border);
