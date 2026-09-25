@@ -3586,8 +3586,7 @@
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  const swUrl = 'sw.js?v=' + Date.now();
-  navigator.serviceWorker.register(swUrl).then(reg => {
+  navigator.serviceWorker.register('sw.js').then(reg => {
     reg.addEventListener('updatefound', () => {
       const sw = reg.installing;
       sw.addEventListener('statechange', () => {
@@ -3600,11 +3599,6 @@ if ('serviceWorker' in navigator) {
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!refreshing) { refreshing = true; window.location.reload(); }
-  });
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (e.data && e.data.type === 'SW_UPDATED') {
-      showUpdateBanner();
-    }
   });
 }
 
