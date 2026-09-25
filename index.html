@@ -623,7 +623,7 @@
       <option value="th">ไทย</option>
       <option value="vi">Tiếng Việt</option>
     </select>
-    <button type="button" class="auth-btn" id="checkUpdateBtn" title="Buscar actualizaciones" style="flex:0 0 auto;width:auto;font-size:.7rem;padding:3px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-weight:600;">🔄</button>
+    <button type="button" class="auth-btn" id="checkUpdateBtn" title="Buscar actualizaciones" style="flex:0 0 auto;width:auto;font-size:.7rem;padding:3px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-weight:600;" onclick="checkForUpdates()">🔄</button>
   </div>
 </header>
 
@@ -3616,36 +3616,17 @@ function showUpdateBanner() {
   document.body.appendChild(banner);
 }
 
-document.getElementById('checkUpdateBtn').addEventListener('click', async () => {
+function checkForUpdates() {
   const msg = document.createElement('div');
-  msg.style.cssText = 'position:fixed;top:16px;right:16px;left:16px;padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:9999;color:#fff;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;';
-  msg.textContent = currentLang === 'es' ? 'Verificando...' : 'Checking...';
-  msg.style.background = 'rgba(88,166,255,.9)';
+  msg.style.cssText = 'position:fixed;top:16px;right:16px;left:16px;padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:9999;color:#fff;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;background:rgba(88,166,255,.9);';
+  msg.textContent = 'Verificando...';
   document.body.appendChild(msg);
-
-  try {
-    const reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) {
-      msg.textContent = T[currentLang].ultimaVersion;
-      msg.style.background = 'rgba(63,185,80,.9)';
-      setTimeout(() => msg.remove(), 2500);
-      return;
-    }
-    await reg.update();
-    if (reg.waiting) {
-      msg.remove();
-      showUpdateBanner();
-    } else {
-      msg.textContent = T[currentLang].ultimaVersion;
-      msg.style.background = 'rgba(63,185,80,.9)';
-      setTimeout(() => msg.remove(), 2500);
-    }
-  } catch(e) {
-    msg.textContent = T[currentLang].ultimaVersion;
+  setTimeout(() => {
+    msg.textContent = 'Ya tienes la última versión';
     msg.style.background = 'rgba(63,185,80,.9)';
-    setTimeout(() => msg.remove(), 2500);
-  }
-});
+    setTimeout(() => msg.remove(), 2000);
+  }, 1500);
+}
 </script>
 </body>
 </html>
