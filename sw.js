@@ -36,11 +36,12 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
+  if (e.request.url.includes('firebase') || e.request.url.includes('gstatic')) return;
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
+    fetch(e.request).then(resp => {
       const clone = resp.clone();
       caches.open(CACHE).then(c => c.put(e.request, clone));
       return resp;
-    }).catch(() => caches.match('./index.html')))
+    }).catch(() => caches.match(e.request))
   );
 });
