@@ -3617,32 +3617,33 @@ function showUpdateBanner() {
 }
 
 document.getElementById('checkUpdateBtn').addEventListener('click', async () => {
-  const checking = document.createElement('div');
-  checking.style.cssText = 'position:fixed;top:16px;right:16px;left:16px;padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:9999;background:rgba(88,166,255,.9);color:#fff;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;';
-  checking.textContent = currentLang === 'es' ? 'Buscando actualizaciones...' : 'Checking for updates...';
-  document.body.appendChild(checking);
-
-  const reg = await navigator.serviceWorker.getRegistration();
-  if (!reg) {
-    checking.textContent = currentLang === 'es' ? 'Sin service worker' : 'No service worker';
-    setTimeout(() => checking.remove(), 2000);
-    return;
-  }
+  const msg = document.createElement('div');
+  msg.style.cssText = 'position:fixed;top:16px;right:16px;left:16px;padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:9999;color:#fff;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:toastIn .3s ease;';
+  msg.textContent = currentLang === 'es' ? 'Verificando...' : 'Checking...';
+  msg.style.background = 'rgba(88,166,255,.9)';
+  document.body.appendChild(msg);
 
   try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      msg.textContent = T[currentLang].ultimaVersion;
+      msg.style.background = 'rgba(63,185,80,.9)';
+      setTimeout(() => msg.remove(), 2500);
+      return;
+    }
     await reg.update();
     if (reg.waiting) {
-      checking.remove();
+      msg.remove();
       showUpdateBanner();
     } else {
-      checking.textContent = T[currentLang].ultimaVersion;
-      checking.style.background = 'rgba(63,185,80,.9)';
-      setTimeout(() => checking.remove(), 2500);
+      msg.textContent = T[currentLang].ultimaVersion;
+      msg.style.background = 'rgba(63,185,80,.9)';
+      setTimeout(() => msg.remove(), 2500);
     }
   } catch(e) {
-    checking.textContent = T[currentLang].ultimaVersion;
-    checking.style.background = 'rgba(63,185,80,.9)';
-    setTimeout(() => checking.remove(), 2500);
+    msg.textContent = T[currentLang].ultimaVersion;
+    msg.style.background = 'rgba(63,185,80,.9)';
+    setTimeout(() => msg.remove(), 2500);
   }
 });
 </script>
