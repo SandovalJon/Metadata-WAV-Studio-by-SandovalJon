@@ -813,12 +813,29 @@
             </div>
           </div>
 
+          <div class="trim-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <label data-i18n="labelTrim">Recortar audio</label>
+            <div class="row">
+              <div>
+                <label for="trimStart" data-i18n="trimInicio">Inicio (segundos)</label>
+                <input type="text" id="trimStart" value="0" placeholder="0">
+              </div>
+              <div>
+                <label for="trimEnd" data-i18n="trimFin">Fin (segundos)</label>
+                <input type="text" id="trimEnd" placeholder="duración total">
+              </div>
+            </div>
+            <p class="cover-note" data-i18n="trimNote">Deja vacío el fin para usar toda la duración. Aplica a la conversión.</p>
+          </div>
+
           <p class="cover-note" data-i18n="wavMetaNote">Los metadatos que completaste en la pestaña Editar se guardan también en el WAV. La portada no se guarda en formato WAV.</p>
         </div>
       </div>
     </div>
 
     <div class="actions" style="gap:8px;">
+      <button type="button" class="btn-cancel ripple" id="shareBtn" style="flex:0 0 auto;padding:8px 10px;font-size:.75rem;" title="Compartir">📤</button>
+      <button type="button" class="btn-cancel ripple" id="readOnlyBtn" style="flex:0 0 auto;padding:8px 10px;font-size:.75rem;" title="Modo lectura">👁️</button>
       <button type="submit" class="btn-download ripple" id="saveBtn" data-i18n="btnGuardar">Guardar y descargar</button>
       <button type="button" class="btn-cancel ripple" id="cancelBtn" data-i18n="btnCancelar">Cancelar</button>
     </div>
@@ -911,6 +928,10 @@
       labelDither: 'Dithering',
       labelResample: 'Calidad de resampleo',
       wavMetaNote: 'Los metadatos que completaste arriba se guardan también en el WAV. La portada no se guarda en formato WAV.',
+      labelTrim: 'Recortar audio',
+      trimInicio: 'Inicio (segundos)',
+      trimFin: 'Fin (segundos)',
+      trimNote: 'Deja vacío el fin para usar toda la duración. Aplica a la conversión.',
       btnGuardar: 'Guardar y descargar',
       btnCancelar: 'Cancelar',
       btnIniciar: 'Iniciar con Google',
@@ -987,6 +1008,10 @@
       labelDither: 'Dithering',
       labelResample: 'Resample quality',
       wavMetaNote: 'The metadata you entered above is also saved in the WAV. Cover art is not saved in WAV format.',
+      labelTrim: 'Trim audio',
+      trimInicio: 'Start (seconds)',
+      trimFin: 'End (seconds)',
+      trimNote: 'Leave end empty for full duration. Applies to conversion.',
       btnGuardar: 'Save and download',
       btnCancelar: 'Cancel',
       btnIniciar: 'Sign in with Google',
@@ -1062,6 +1087,10 @@
       labelDither: 'Dithering',
       labelResample: 'Qualidade de resampling',
       wavMetaNote: 'Os metadados que você preencheu acima também são salvos no WAV. A capa não é salva no formato WAV.',
+      labelTrim: 'Recortar áudio',
+      trimInicio: 'Início (segundos)',
+      trimFin: 'Fim (segundos)',
+      trimNote: 'Deixe o fim vazio para usar toda a duração. Aplica à conversão.',
       btnGuardar: 'Salvar e baixar',
       btnCancelar: 'Cancelar',
       btnIniciar: 'Entrar com Google',
@@ -1126,6 +1155,10 @@
       labelCanales: 'Canaux',
       labelNormalizar: 'Normaliser',
       wavMetaNote: 'Les métadonnées que vous avez saisies sont également enregistrées dans le WAV. La pochette n\'est pas enregistrée en format WAV.',
+      labelTrim: 'Raccourcir audio',
+      trimInicio: 'Début (secondes)',
+      trimFin: 'Fin (secondes)',
+      trimNote: 'Laissez la fin vide pour la durée totale. S\'applique à la conversion.',
       btnGuardar: 'Enregistrer et télécharger',
       btnCancelar: 'Annuler',
       btnIniciar: 'Se connecter avec Google',
@@ -1183,6 +1216,10 @@
       labelCanales: 'Kanäle',
       labelNormalizar: 'Normalisieren',
       wavMetaNote: 'Die eingegebenen Metadaten werden auch im WAV gespeichert. Das Cover wird im WAV-Format nicht gespeichert.',
+      labelTrim: 'Audio trimmen',
+      trimInicio: 'Start (Sekunden)',
+      trimFin: 'Ende (Sekunden)',
+      trimNote: 'Ende leer lassen für ganze Dauer. Gilt für Konvertierung.',
       btnGuardar: 'Speichern und herunterladen',
       btnCancelar: 'Abbrechen',
       btnIniciar: 'Mit Google anmelden',
@@ -1240,6 +1277,10 @@
       labelCanales: 'Canali',
       labelNormalizar: 'Normalizza',
       wavMetaNote: 'I metadati inseriti vengono salvati anche nel WAV. La copertina non viene salvata nel formato WAV.',
+      labelTrim: 'Taglia audio',
+      trimInicio: 'Inizio (secondi)',
+      trimFin: 'Fine (secondi)',
+      trimNote: 'Lascia vuoto il fine per la durata intera. Si applica alla conversione.',
       btnGuardar: 'Salva e scarica',
       btnCancelar: 'Annulla',
       btnIniciar: 'Accedi con Google',
@@ -1297,6 +1338,10 @@
       labelCanales: 'Kanalen',
       labelNormalizar: 'Normaliseren',
       wavMetaNote: 'De metadata die je hebt ingevuld wordt ook opgeslagen in WAV. De hoes wordt niet opgeslagen in WAV-formaat.',
+      labelTrim: 'Audio bijsnijden',
+      trimInicio: 'Start (seconden)',
+      trimFin: 'Einde (seconden)',
+      trimNote: 'Laat einde leeg voor volledige duur. Geldt voor conversie.',
       btnGuardar: 'Opslaan en downloaden',
       btnCancelar: 'Annuleren',
       btnIniciar: 'Inloggen met Google',
@@ -1354,6 +1399,10 @@
       labelCanales: 'Каналы',
       labelNormalizar: 'Нормализация',
       wavMetaNote: 'Введённые метаданные также сохраняются в WAV. Обложка не сохраняется в формате WAV.',
+      labelTrim: 'Обрезать аудио',
+      trimInicio: 'Начало (секунды)',
+      trimFin: 'Конец (секунды)',
+      trimNote: 'Оставьте конец пустым для полной длительности. Применяется к конвертации.',
       btnGuardar: 'Сохранить и скачать',
       btnCancelar: 'Отмена',
       btnIniciar: 'Войти через Google',
@@ -1411,6 +1460,10 @@
       labelCanales: 'Канали',
       labelNormalizar: 'Нормалізація',
       wavMetaNote: 'Введені метадані також зберігаються у WAV. Обкладинка не зберігається у форматі WAV.',
+      labelTrim: 'Обрізати аудіо',
+      trimInicio: 'Початок (секунди)',
+      trimFin: 'Кінець (секунди)',
+      trimNote: 'Залиште кінець порожнім для повної тривалості. Застосовується до конвертації.',
       btnGuardar: 'Зберегти та завантажити',
       btnCancelar: 'Скасувати',
       btnIniciar: 'Увійти через Google',
@@ -1468,6 +1521,10 @@
       labelCanales: 'Kanały',
       labelNormalizar: 'Normalizuj',
       wavMetaNote: 'Wprowadzone metadane są również zapisywane w WAV. Okładka nie jest zapisywana w formacie WAV.',
+      labelTrim: 'Przycinaj audio',
+      trimInicio: 'Początek (sekundy)',
+      trimFin: 'Koniec (sekundy)',
+      trimNote: 'Zostaw koniec pusty dla pełnej długości. Dotyczy konwersji.',
       btnGuardar: 'Zapisz i pobierz',
       btnCancelar: 'Anuluj',
       btnIniciar: 'Zaloguj przez Google',
@@ -1525,6 +1582,10 @@
       labelCanales: 'Kanály',
       labelNormalizar: 'Normalizovat',
       wavMetaNote: 'Zadaná metadata se také uloží do WAV. Obal se ve formátu WAV neukládá.',
+      labelTrim: 'Oříznout audio',
+      trimInicio: 'Začátek (sekundy)',
+      trimFin: 'Konec (sekundy)',
+      trimNote: 'Nechte konec prázdný pro plnou délku. Platí pro konverzi.',
       btnGuardar: 'Uložit a stáhnout',
       btnCancelar: 'Zrušit',
       btnIniciar: 'Přihlásit přes Google',
@@ -1582,6 +1643,10 @@
       labelCanales: 'Kanaler',
       labelNormalizar: 'Normalisera',
       wavMetaNote: 'Metadata du angett sparas också i WAV. Omslag sparas inte i WAV-format.',
+      labelTrim: 'Bespara audio',
+      trimInicio: 'Start (sekunder)',
+      trimFin: 'Slut (sekunder)',
+      trimNote: 'Lämna slut tomt för full längd. Gäller konvertering.',
       btnGuardar: 'Spara och ladda ner',
       btnCancelar: 'Avbryt',
       btnIniciar: 'Logga in med Google',
@@ -1639,6 +1704,10 @@
       labelCanales: 'Kanaler',
       labelNormalizar: 'Normaliser',
       wavMetaNote: 'Metadata du indtastede gemmes også i WAV. Omslag gemmes ikke i WAV-format.',
+      labelTrim: 'Beskær audio',
+      trimInicio: 'Start (sekunder)',
+      trimFin: 'Slut (sekunder)',
+      trimNote: 'Lad slut stå tomt for fuld varighed. Gælder konvertering.',
       btnGuardar: 'Gem og download',
       btnCancelar: 'Annuller',
       btnIniciar: 'Log ind med Google',
@@ -1696,6 +1765,10 @@
       labelCanales: 'Kanavat',
       labelNormalizar: 'Normalisoi',
       wavMetaNote: 'Syöttämäsi metatiedot tallennetaan myös WAV:een. Kansi ei tallennu WAV-muotoon.',
+      labelTrim: 'Leikkaa audioa',
+      trimInicio: 'Alku (sekuntia)',
+      trimFin: 'Loppu (sekuntia)',
+      trimNote: 'Jätä loppu tyhjäksi koko kestolle. Koskee muunnosta.',
       btnGuardar: 'Tallenna ja lataa',
       btnCancelar: 'Peruuta',
       btnIniciar: 'Kirjaudu Googlella',
@@ -1753,6 +1826,10 @@
       labelCanales: 'Kanaler',
       labelNormalizar: 'Normaliser',
       wavMetaNote: 'Metadata du skrev inn lagres også i WAV. Cover lagres ikke i WAV-format.',
+      labelTrim: 'Beskjær audio',
+      trimInicio: 'Start (sekunder)',
+      trimFin: 'Slutt (sekunder)',
+      trimNote: 'La stå tomt for full varighet. Gjelder konvertering.',
       btnGuardar: 'Lagre og last ned',
       btnCancelar: 'Avbryt',
       btnIniciar: 'Logg inn med Google',
@@ -1810,6 +1887,10 @@
       labelCanales: 'Kanallar',
       labelNormalizar: 'Normalleştir',
       wavMetaNote: 'Girdiğiniz metaveriler WAV\'da da kaydedilir. Kapak WAV biçiminde kaydedilmez.',
+      labelTrim: 'Kes',
+      trimInicio: 'Başlangıç (saniye)',
+      trimFin: 'Bitiş (saniye)',
+      trimNote: 'Tam süre için bitişi boş bırakın. Dönüştürmeye uygulanır.',
       btnGuardar: 'Kaydet ve indir',
       btnCancelar: 'İptal',
       btnIniciar: 'Google ile giriş yap',
@@ -1867,6 +1948,10 @@
       labelCanales: 'القنوات',
       labelNormalizar: 'تطبيع',
       wavMetaNote: 'البيانات الوصفية التي أدخلتها تُحفظ أيضًا في WAV. الأغلفة لا تُحفظ بصيغة WAV.',
+      labelTrim: 'قص الصوت',
+      trimInicio: 'البداية (ثواني)',
+      trimFin: 'النهاية (ثواني)',
+      trimNote: 'اترك النهاية فارغة للمدة الكاملة. يُطبق على التحويل.',
       btnGuardar: 'حفظ وتنزيل',
       btnCancelar: 'إلغاء',
       btnIniciar: 'تسجيل الدخول بـ Google',
@@ -1924,6 +2009,10 @@
       labelCanales: 'کانال‌ها',
       labelNormalizar: 'نرمال‌سازی',
       wavMetaNote: 'متادیتای وارد شده شما در WAV نیز ذخیره می‌شود. کاور در فرمت WAV ذخیره نمی‌شود.',
+      labelTrim: 'برش صدا',
+      trimInicio: 'شروع (ثانیه)',
+      trimFin: 'پایان (ثانیه)',
+      trimNote: 'برای مدت کامل پایان را خالی بگذارید. در تبدیل اعمال می‌شود.',
       btnGuardar: 'ذخیره و دانلود',
       btnCancelar: 'لغو',
       btnIniciar: 'ورود با Google',
@@ -1981,6 +2070,10 @@
       labelCanales: 'चैनल',
       labelNormalizar: 'सामान्य करें',
       wavMetaNote: 'आपने जो मेटाडेटा दर्ज किया है वह WAV में भी सहेजा जाता है। कवर WAV प्रारूप में नहीं सहेजा जाता।',
+      labelTrim: 'ऑडियो ट्रिम',
+      trimInicio: 'शुरुआत (सेकंड)',
+      trimFin: 'अंत (सेकंड)',
+      trimNote: 'पूरी अवधि के लिए अंत खाली छोड़ें। रूपांतरण पर लागू होता है।',
       btnGuardar: 'सहेजें और डाउनलोड करें',
       btnCancelar: 'रद्द करें',
       btnIniciar: 'Google से लॉगिन करें',
@@ -2038,6 +2131,10 @@
       labelCanales: 'চ্যানেল',
       labelNormalizar: 'স্বাভাবিকীকরণ',
       wavMetaNote: 'আপনি যে মেটাডাটা প্রবেশ করেছেন তা WAV এও সংরক্ষিত হয়। কভার WAV ফরম্যাটে সংরক্ষিত হয় না।',
+      labelTrim: 'অডিও ট্রিম',
+      trimInicio: 'শুরু (সেকেন্ড)',
+      trimFin: 'শেষ (সেকেন্ড)',
+      trimNote: 'সম্পূর্ণ সময়ের জন্য শেষ খালি রাখুন। রূপান্তরে প্রযোজ্য।',
       btnGuardar: 'সংরক্ষণ করুন এবং ডাউনলোড করুন',
       btnCancelar: 'বাতিল',
       btnIniciar: 'Google দিয়ে লগইন করুন',
@@ -2095,6 +2192,10 @@
       labelCanales: '声道',
       labelNormalizar: '标准化',
       wavMetaNote: '您输入的元数据也会保存在 WAV 中。封面不会以 WAV 格式保存。',
+      labelTrim: '裁剪音频',
+      trimInicio: '开始 (秒)',
+      trimFin: '结束 (秒)',
+      trimNote: '留空结束为完整时长。适用于转换。',
       btnGuardar: '保存并下载',
       btnCancelar: '取消',
       btnIniciar: '使用 Google 登录',
@@ -2152,6 +2253,10 @@
       labelCanales: 'チャンネル',
       labelNormalizar: 'ノーマライズ',
       wavMetaNote: '入力したメタデータはWAVにも保存されます。カバーはWAV形式では保存されません。',
+      labelTrim: '音声をトリミング',
+      trimInicio: '開始 (秒)',
+      trimFin: '終了 (秒)',
+      trimNote: '終了を空欄で全体の長さ。変換に適用されます。',
       btnGuardar: '保存してダウンロード',
       btnCancelar: 'キャンセル',
       btnIniciar: 'Googleでログイン',
@@ -2209,6 +2314,10 @@
       labelCanales: '채널',
       labelNormalizar: '정규화',
       wavMetaNote: '입력한 메타데이터는 WAV에도 저장됩니다. 커버는 WAV 형식으로 저장되지 않습니다.',
+      labelTrim: '오디오 자르기',
+      trimInicio: '시작 (초)',
+      trimFin: '끝 (초)',
+      trimNote: '전체 길이를 위해 끝을 비워두세요. 변환에 적용됩니다.',
       btnGuardar: '저장 및 다운로드',
       btnCancelar: '취소',
       btnIniciar: 'Google로 로그인',
@@ -2266,6 +2375,10 @@
       labelCanales: 'แชนเนล',
       labelNormalizar: 'ปรับมาตรฐาน',
       wavMetaNote: 'ข้อมูลเมตาที่คุณกรอกจะถูกบันทึกใน WAV ด้วย ปกจะไม่ถูกบันทึกในรูปแบบ WAV',
+      labelTrim: 'ตัดเสียง',
+      trimInicio: 'เริ่ม (วินาที)',
+      trimFin: 'สิ้นสุด (วินาที)',
+      trimNote: 'เว้นว่างสิ้นสุดสำหรับความยาวเต็ม ใช้กับการแปลง',
       btnGuardar: 'บันทึกและดาวน์โหลด',
       btnCancelar: 'ยกเลิก',
       btnIniciar: 'เข้าสู่ระบบด้วย Google',
@@ -2323,6 +2436,10 @@
       labelCanales: 'Kênh',
       labelNormalizar: 'Chuẩn hóa',
       wavMetaNote: 'Metadata bạn nhập cũng được lưu trong WAV. Bìa không được lưu ở định dạng WAV.',
+      labelTrim: 'Cắt âm thanh',
+      trimInicio: 'Bắt đầu (giây)',
+      trimFin: 'Kết thúc (giây)',
+      trimNote: 'Để trống kết thúc cho toàn bộ thời lượng. Áp dụng cho chuyển đổi.',
       btnGuardar: 'Lưu và tải xuống',
       btnCancelar: 'Hủy',
       btnIniciar: 'Đăng nhập bằng Google',
@@ -2918,13 +3035,16 @@
     const audio = await ctx.decodeAudioData(arrayBuffer);
     await ctx.close();
 
+    const trimStart = parseFloat(opts.trimStart) || 0;
+    const trimEnd = parseFloat(opts.trimEnd) || audio.duration;
+    const duration = Math.min(trimEnd, audio.duration) - trimStart;
     const channels = opts.channels;
-    const length = Math.ceil(audio.duration * opts.sampleRate);
+    const length = Math.ceil(duration * opts.sampleRate);
     const offline = new OfflineAudioContext(channels, length, opts.sampleRate);
     const source = offline.createBufferSource();
     source.buffer = audio;
     source.connect(offline.destination);
-    source.start(0);
+    source.start(0, trimStart, duration);
     const rendered = await offline.startRendering();
 
     if (opts.normalize !== 'none') {
@@ -3513,7 +3633,9 @@
             bitDepth: get('wavBits').value,
             normalize: get('wavNorm').value,
             dither: get('wavDither').value,
-            resample: get('wavResample').value
+            resample: get('wavResample').value,
+            trimStart: get('trimStart').value,
+            trimEnd: get('trimEnd').value
           });
           const base = (get('title').value.trim() || f.name.replace(/\.mp3$/i, ''));
           const bitsLabel = get('wavBits').value === '32f' ? '32float' : get('wavBits').value + 'bit';
@@ -3627,6 +3749,48 @@ function checkForUpdates() {
     setTimeout(() => msg.remove(), 2000);
   }, 1500);
 }
+
+// ===== SHARE =====
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const text = [
+    'Title: ' + document.getElementById('title').value,
+    'Artist: ' + document.getElementById('artist').value,
+    'Album: ' + document.getElementById('album').value
+  ].filter(t => !t.endsWith(': ')).join('\n');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Audio Studio', text: text });
+    } catch(e) {}
+  } else {
+    await navigator.clipboard.writeText(text);
+    const toast = document.createElement('div');
+    toast.className = 'copy-toast';
+    toast.textContent = 'Copiado al portapapeles';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+});
+// ===== END SHARE =====
+
+// ===== READ-ONLY MODE =====
+let readOnly = false;
+document.getElementById('readOnlyBtn').addEventListener('click', () => {
+  readOnly = !readOnly;
+  document.querySelectorAll('#panelEdit input[type="text"]').forEach(i => {
+    i.readOnly = readOnly;
+    i.style.opacity = readOnly ? '.6' : '1';
+  });
+  document.getElementById('readOnlyBtn').style.borderColor = readOnly ? 'var(--accent)' : '';
+  document.getElementById('readOnlyBtn').style.color = readOnly ? 'var(--accent)' : '';
+  const t = readOnly ? 'Modo lectura activado' : 'Modo edición activado';
+  const toast = document.createElement('div');
+  toast.className = 'copy-toast';
+  toast.textContent = t;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
+});
+// ===== END READ-ONLY =====
 </script>
 </body>
 </html>
