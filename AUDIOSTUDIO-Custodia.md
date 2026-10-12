@@ -132,7 +132,7 @@ Sin entradas archivadas todavía.
   - Verificación: versión leída de `index.html:850`; `git log -1` da `8eb519c`; la API de Pages devuelve rama `gh-pages` y estado `built`; `sw.js` declara `CACHE = 'audio-studio-v4'` y `VERSION = 'v2.1.0'`; la configuración de Firebase está en `index.html` líneas 2528-2530; `git branch -r` muestra `origin/master` y `origin/gh-pages`; el repositorio es público y su id es `1377353179`.
   - Pendientes: actualizar el remoto local de `Metadata` a `Metadata-WAV-Studio-by-SandovalJon`; sincronizar `VERSION` de `sw.js` con la versión de la app; decidir si la clave de API de Firebase debe rotarse por haber estado documentada en un repositorio público.
 
-- v2 | 2026-10-12 | Sincronizar versión del service worker con la app | código: sin-commit
+- v2 | 2026-10-12 | Sincronizar versión del service worker con la app | código: 7944522
   - Agente: [opencode-1]
   - Qué cambió: `sw.js` pasa de `VERSION = 'v2.1.0'` a `VERSION = 'v3.1.0'`, alineado con la versión que la app declara en `index.html:850`. La caché sube de `audio-studio-v4` a `audio-studio-v5`, siguiendo el procedimiento propio del proyecto para invalidar la caché de los clientes. Es el único cambio de código; la app no se vio afectada.
   - Secciones actualizadas: `7. MEMORIA` marca la lección 5 nº 11 como resuelta y el remoto local como resuelto por el propio push. La lección 5 nº 11 se deja sin reescribir, como manda el append-only.
