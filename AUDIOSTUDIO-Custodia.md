@@ -111,10 +111,12 @@ Sin entradas archivadas todavía.
 
 ## 7. MEMORIA
 
-- [opencode-1] Tarea activa: ninguna. Migración Ruta B ejecutada el 2026-10-12: se unificaron `Audio-Studio-Base-Conocimiento.md` y `Audio-Studio-Manual-Skills.md` en este archivo, y los originales quedaron en `archivados/`.
-- [opencode-1] Corrección: la documentación heredada declaraba versión `v2.0.0` del 2026-09-23 y caché `audio-studio-v2`; el código real es `v3.1.0` en `index.html:850`, commit `8eb519c`, y caché `audio-studio-v4`. Se adopta lo verificado.
+- [opencode-1] Tarea activa: ninguna. Migración Ruta B ejecutada el 2026-10-12: se unificaron `Audio-Studio-Base-Conocimiento.md` y `Audio-Studio-Manual-Skills.md` en este archivo, y los originales quedaron en `archivados/` (locales, fuera del repo por contener credenciales).
+- [opencode-1] Resuelto en v2: `sw.js` declaraba `VERSION = 'v2.1.0'` frente a una app en `v3.1.0`. Alineados y subida la caché a `audio-studio-v5`. La lección 5 nº 11 queda resuelta en la práctica.
+- [opencode-1] Resuelto sin intervención: el remoto local apuntaba a `Metadata`, pero el push a `master` actualizó solo la URL al nombre actual `Metadata-WAV-Studio-by-SandovalJon`, porque Git detecta el renombrado en el servidor y reescribe el remoto. Verificado con `git remote get-url origin`.
+- [opencode-1] Corregido: la documentación heredada declaraba versión `v2.0.0` del 2026-09-23 y caché `audio-studio-v2`; el código real es `v3.1.0` en `index.html:850`, commit `8eb519c`. Se adoptó lo verificado.
 - [opencode-1] Hallazgo: el archivo heredado contenía la clave de API de Firebase en texto plano y el repositorio es público. El valor no se ha copiado a este documento, que solo indica dónde vive la configuración.
-- [opencode-1] Hallazgo: el remoto local `Metadata` es un nombre antiguo del repositorio actual `Metadata-WAV-Studio-by-SandovalJon`; ambos resuelven al mismo id `1377353179`. El remoto local conviene actualizarlo para evitar confusiones.
+- [opencode-1] Pendiente abierto: borrar el repositorio `wallpaper-quest`, que requiere que el usuario autorice `gh auth refresh -h github.com -s delete_repo`. Fuera del alcance de este proyecto.
 - [opencode-1] Decisión: `NOMBRE` es `AUDIOSTUDIO` — motivo: la carpeta y el repo describen el proyecto como "Metadata / WAV Studio", pero el nombre real de la aplicación en `manifest.json` y en la documentación heredada es "Audio Studio" — estado: tomada.
 - [opencode-1] Decisión: Pages se despliega desde `gh-pages` y no desde `master` — motivo: así consta en la configuración de Pages y en el procedimiento heredado — estado: tomada.
 - Preferencias del usuario: español; respuestas concisas; un archivo de custodia por página; quiere que el agente ejecute y publique sin pedir confirmación paso a paso.
@@ -129,6 +131,13 @@ Sin entradas archivadas todavía.
   - Secciones actualizadas: todas (creación por migración). `3. RECURSOS` incorpora el aviso de privacidad y elimina la clave. `5. LECCIONES` consolida las dieciséis entradas heredadas en doce sin duplicar y añade dos nuevas: el desfase de versión con el service worker y la filtración de credenciales en Markdown. `6. SKILLS` registra el despliegue por `gh-pages` y la invalidación de caché.
   - Verificación: versión leída de `index.html:850`; `git log -1` da `8eb519c`; la API de Pages devuelve rama `gh-pages` y estado `built`; `sw.js` declara `CACHE = 'audio-studio-v4'` y `VERSION = 'v2.1.0'`; la configuración de Firebase está en `index.html` líneas 2528-2530; `git branch -r` muestra `origin/master` y `origin/gh-pages`; el repositorio es público y su id es `1377353179`.
   - Pendientes: actualizar el remoto local de `Metadata` a `Metadata-WAV-Studio-by-SandovalJon`; sincronizar `VERSION` de `sw.js` con la versión de la app; decidir si la clave de API de Firebase debe rotarse por haber estado documentada en un repositorio público.
+
+- v2 | 2026-10-12 | Sincronizar versión del service worker con la app | código: sin-commit
+  - Agente: [opencode-1]
+  - Qué cambió: `sw.js` pasa de `VERSION = 'v2.1.0'` a `VERSION = 'v3.1.0'`, alineado con la versión que la app declara en `index.html:850`. La caché sube de `audio-studio-v4` a `audio-studio-v5`, siguiendo el procedimiento propio del proyecto para invalidar la caché de los clientes. Es el único cambio de código; la app no se vio afectada.
+  - Secciones actualizadas: `7. MEMORIA` marca la lección 5 nº 11 como resuelta y el remoto local como resuelto por el propio push. La lección 5 nº 11 se deja sin reescribir, como manda el append-only.
+  - Verificación: `node --check sw.js` sin errores; `sw.js` declara `CACHE = 'audio-studio-v5'` y `VERSION = 'v3.1.0'`; `index.html:850` declara `v3.1.0`. Pendiente de verificar el resultado tras el despliegue: el banner de nueva versión en un cliente con la versión anterior y que el sitio siga respondiendo.
+  - Pendientes: rotar la clave de API de Firebase, que sigue presente en el historial de git aunque ya no esté en la raíz del repositorio.
 
 ## 8b. VERSIONES (archivo)
 
