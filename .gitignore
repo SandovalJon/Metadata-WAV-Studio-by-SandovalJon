@@ -1,0 +1,8 @@
+# Copia local de la documentacion anterior a la migracion.
+# No se sube: contiene una clave de API de Firebase en texto plano
+# que la documentacion heredada exponia en un repositorio publico.
+archivados/
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
