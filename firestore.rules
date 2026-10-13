@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// Reglas de Firestore del proyecto metadata---wav-studio.
+//
+// ESTADO ACTUAL: la aplicacion NO usa Firestore.
+// En index.html existen las funciones saveDoc, loadDoc, loadUserDocs y
+// deleteDoc (lineas 2541-2560), pero no se invocan en ningun punto del
+// proyecto: se verifico el conteo de llamadas y solo aparecen las definiciones.
+// La app si usa Firebase Auth (login con Google), que no depende de estas reglas.
+//
+// Por eso la politica es de denegar todo: nadie puede leer ni escribir, ni
+// siquiera desde la consola del navegador con la configuracion publica del
+// proyecto. Esto ya era un riesgo antes, porque la apiKey del cliente esta
+// incrustada en index.html y es publica por diseno; con reglas abiertas,
+// cualquiera podia usar la API de Firestore directamente aunque la app no
+// guardara nada.
+//
+// Que no te confuse "cerrado": los datos que ya existieran siguen intactos.
+// Las reglas solo controlan el acceso, no borran nada.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // CUANDO NECESITES SINCRONIZAR EN LA NUBE
+    // ------------------------------------------------
+    // 1. Convierte una coleccion en /datos_usuario/{uid}/...
+    //    El uid va en la ruta, no en un campo, porque la ruta no la elige
+    //    el cliente: es la garantia de que nadie pueda escribir en la de otro.
+    //
+    // 2. Descomenta este bloque y comenta el de deny-all de arriba:
+    //
+    // match /datos_usuario/{uid} {
+    //   allow read, write: if request.auth != null
+    //                       && request.auth.uid == uid;
+    //   match /{subdoc=**} {
+    //     allow read, write: if request.auth != null
+    //                         && request.auth.uid == uid;
+    //   }
+    // }
+    //
+    // 3. La consulta loadUserDocs (index.html:2550) filtra por campo 'uid' y
+    //    ordena por 'createdAt'. Ese filtro combinado exige un indice
+    //    compuesto en la coleccion, que Firebase crea solo la primera vez que
+    //    se ejecuta la consulta, o puedes declararlo en firestore.indexes.json.
+    //
+    // Comprueba siempre el resultado con el emulador antes de desplegar:
+    //   firebase emulators:start --only firestore
+  }
+}

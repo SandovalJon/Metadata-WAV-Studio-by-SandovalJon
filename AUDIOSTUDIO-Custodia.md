@@ -1,6 +1,6 @@
 # AUDIOSTUDIO — Custodia del Proyecto
 
-> Última actualización: 2026-10-12 · Versión del documento: v1
+> Última actualización: 2026-10-13 · Versión del documento: v3
 
 ## Mapa del documento
 
@@ -52,6 +52,8 @@ Lectura por defecto: `7. MEMORIA` y este mapa. Las secciones `1`–`5` se abren 
 - Dónde vive la configuración: la configuración de Firebase (clave de API, dominio de autenticación e identificador de proyecto) está incrustada en `index.html`, líneas 2528 a 2530. El identificador de la cuenta propietaria que habilita el tema Esmeralda también está en el código. No hay variables de entorno ni archivo de configuración aparte.
 - Aviso de privacidad: esta sección referencia configuración sensible. Uso local. No subir a repos.
 - Esquemas de datos: mapeo de ID3v2 en MP3: TIT2 título, TPE1 artista, TALB álbum, TPE2 artista del álbum, TYER año, TRCK pista, TCON género, TCOM compositor, COMM comentario, APIC portada. Mapeo de LIST-INFO en WAV: INAM título, IART artista, IPRD álbum, ICRD año, ITRK pista, IGNR género, ICMT comentario.
+- Reglas de acceso a datos: `firestore.rules`, política de denegar todo, porque la app no usa Firestore. `firebase.json` y `.firebaserc` permiten desplegarla con la CLI de Firebase. El proyecto no tiene reglas versionadas antes de esto: las reglas vivían solo en la consola y no estaban registradas en el repositorio.
+- Aviso de privacidad: la política de denegar todo no es solo preventiva. Con reglas abiertas, cualquiera podía leer y escribir en la base de datos usando la configuración pública del cliente que está incrustada en `index.html`.
 - Memoria / almacenamiento: claves de `localStorage`: `theme`, `lastTab`, `wavPresets`, `draftFields`, `compactMode` y `windowSize`. Sin IndexedDB.
 
 ## 4. CAPACIDADES
@@ -82,6 +84,8 @@ Lectura por defecto: `7. MEMORIA` y este mapa. Las secciones `1`–`5` se abren 
 10. Subir resolución de audio por encima de 24 bits y 48 kHz es inútil — Causa raíz: Spotify, Apple Music y YouTube recomprimen todo lo que publican. · Fix: 24 bits y 48 kHz es el punto óptimo. · Verificación: no verificado.
 11. La versión de la app y la del service worker se desincronizan — Causa raíz: la app declara `v3.1.0` en `index.html:850` mientras `sw.js` declara `VERSION = 'v2.1.0'` y caché `audio-studio-v4`; nadie sincronizó ambas tras las últimas entregas. · Fix: derivar la versión del service worker de la de la app, o declararlas juntas en un único punto. · Verificación: comparación directa de ambos ficheros, realizada el 2026-10-12.
 12. Documentar credenciales en Markdown las filtra a los repos — Causa raíz: el archivo heredado contenía la clave de API de Firebase en texto plano, y el repositorio es público. · Fix: este documento registra solo dónde vive la configuración y lleva el aviso de privacidad; el valor no se copia nunca. · Verificación: la sección `3. RECURSOS` de este archivo no contiene ninguna clave.
+13. La apiKey de un cliente Firebase no es un secreto — Causa raíz: se propuso rotar la clave como prioridad de seguridad, pero la `apiKey` de una app web de Firebase está pensada para ir incrustada en el código público y se ve en cualquier sitio que use Firebase. Rotarla no protege los datos. · Fix: lo que protege los datos son las reglas de Firestore y de Storage, que es lo que se añadió en la v3. · Verificación: la `apiKey` sigue visible en `index.html` y el sitio sigue funcionando tras desplegar reglas restrictivas.
+14. Las funciones de acceso a datos pueden quedar muertas y aun así abrir un agujero — Causa raíz: `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc` están definidas en `index.html:2541-2560` y nunca se invocan, así que la app no usa Firestore. · Fix: antes de endurecer reglas o contratar sincronización, comprobar si el código realmente llama a esas funciones. · Verificación: conteo de llamadas sobre todo el repositorio, hecho el 2026-10-13.
 
 ## 5b. LECCIONES (archivo)
 
@@ -99,7 +103,21 @@ Sin entradas archivadas todavía.
 - Skill: invalidar la caché del service worker — Estado: verificada
   - Propósito: forzar a los clientes a recibir la versión nueva.
   - Pasos: cambiar `const CACHE` en `sw.js` al valor siguiente · desplegar · en el navegador usar `Ctrl+Shift+R` o borrar los datos del sitio.
-  - Verificación: el valor actual es `audio-studio-v4`, leído de `sw.js`.
+    - Verificación: el valor actual es `audio-studio-v5`, leído de `sw.js`.
+    - Agente: [opencode-1]
+
+- Skill: desplegar las reglas de Firestore — Estado: pendiente de verificación
+  - Propósito: aplicar `firestore.rules` en el proyecto Firebase, tanto desde la consola como desde la CLI.
+  - Precondiciones: Node instalado; para la CLI, `npm install -g firebase-tools` y `firebase login`. Los archivos `firestore.rules`, `firebase.json`, `firestore.indexes.json` y `.firebaserc` ya están en el repositorio y apuntan al proyecto `metadata---wav-studio`.
+  - Pasos por consola: abrir el proyecto en la consola de Firebase · ir a **Firestore → Reglas** · borrar el contenido y pegar `firestore.rules` · **Publicar**.
+  - Pasos por CLI: `firebase deploy --only firestore:rules` y después `firebase deploy --only firestore:indexes`.
+  - Verificación: leer las reglas publicadas con `firebase firestore:rules` o en la consola, y comprobar que una lectura sin sesión falla. Pendiente de que el usuario ejecute el despliegue: el agente no tiene credenciales de Firebase.
+  - Agente: [opencode-1]
+
+- Skill: comprobar si la app usa realmente Firestore — Estado: verificada
+  - Propósito: no escribir reglas ni documentación de lo que el código no usa.
+  - Pasos: `Select-String -LiteralPath index.html -Pattern "collection\(|saveDoc\(|loadDoc\(|loadUserDocs\(|deleteDoc\("` y contar si aparecen definiciones o llamadas. En este proyecto aparecen 8 coincidencias: `firebase.firestore()`, las 4 definiciones y las 4 llamadas internas a `.collection()` dentro de ellas. Ninguna invocación externa, luego Firestore está sin usar.
+  - Verificación: conteo confirmado el 2026-10-13 sobre `index.html`.
   - Agente: [opencode-1]
 
 - Skill: editar y escribir etiquetas de audio — Estado: pendiente de verificación
@@ -139,6 +157,13 @@ Sin entradas archivadas todavía.
   - Secciones actualizadas: `7. MEMORIA` marca la lección 5 nº 11 como resuelta y el remoto local como resuelto por el propio push. La lección 5 nº 11 se deja sin reescribir, como manda el append-only.
   - Verificación: `node --check sw.js` sin errores; `sw.js` declara `CACHE = 'audio-studio-v5'` y `VERSION = 'v3.1.0'`; `index.html:850` declara `v3.1.0`. Pendiente de verificar el resultado tras el despliegue: el banner de nueva versión en un cliente con la versión anterior y que el sitio siga respondiendo.
   - Pendientes: rotar la clave de API de Firebase, que sigue presente en el historial de git aunque ya no esté en la raíz del repositorio.
+
+- v3 | 2026-10-12 | Añadir reglas de Firestore en modo denegar todo | código: sin-commit
+  - Agente: [opencode-1]
+  - Qué cambió: se añadieron `firestore.rules`, `firebase.json`, `firestore.indexes.json` y `.firebaserc`. La política es `allow read, write: if false` en todo, con un bloque comentado y listo para activar cuando la app use la nube de verdad. No se modificó el código de la aplicación y no hubo despliegue: las reglas se aplican desde la consola o con la CLI de Firebase, no desde GitHub.
+  - Secciones actualizadas: `3. RECURSOS` describe la política y su porqué · `6. SKILLS` registra el despliegue de las reglas por consola y por CLI, y la comprobación de si la app usa Firestore · `5. LECCIONES` añade que la apiKey de cliente no es un secreto y que lo que protege los datos son las reglas.
+  - Verificación: los tres JSON validan con `ConvertFrom-Json`; `firestore.rules` tiene 53 líneas y conserva la sintaxis esperada (`rules_version = '2'`, `service cloud.firestore`, `match`, `allow`); se confirmó que la app no invoca `saveDoc`, `loadDoc`, `loadUserDocs` ni `deleteDoc` en ningún punto, solo las define. Las reglas aplicadas en el proyecto Firebase no se pueden verificar desde aquí: el agente no tiene credenciales.
+  - Pendientes: el usuario debe publicar las reglas en la consola de Firebase o con la CLI; queda sin decidir si la app llegará a usar Firestore.
 
 ## 8b. VERSIONES (archivo)
 
