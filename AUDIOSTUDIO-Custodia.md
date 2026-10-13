@@ -158,7 +158,7 @@ Sin entradas archivadas todavía.
   - Verificación: `node --check sw.js` sin errores; `sw.js` declara `CACHE = 'audio-studio-v5'` y `VERSION = 'v3.1.0'`; `index.html:850` declara `v3.1.0`. Pendiente de verificar el resultado tras el despliegue: el banner de nueva versión en un cliente con la versión anterior y que el sitio siga respondiendo.
   - Pendientes: rotar la clave de API de Firebase, que sigue presente en el historial de git aunque ya no esté en la raíz del repositorio.
 
-- v3 | 2026-10-12 | Añadir reglas de Firestore en modo denegar todo | código: sin-commit
+- v3 | 2026-10-13 | Añadir reglas de Firestore en modo denegar todo | código: 9c37b27
   - Agente: [opencode-1]
   - Qué cambió: se añadieron `firestore.rules`, `firebase.json`, `firestore.indexes.json` y `.firebaserc`. La política es `allow read, write: if false` en todo, con un bloque comentado y listo para activar cuando la app use la nube de verdad. No se modificó el código de la aplicación y no hubo despliegue: las reglas se aplican desde la consola o con la CLI de Firebase, no desde GitHub.
   - Secciones actualizadas: `3. RECURSOS` describe la política y su porqué · `6. SKILLS` registra el despliegue de las reglas por consola y por CLI, y la comprobación de si la app usa Firestore · `5. LECCIONES` añade que la apiKey de cliente no es un secreto y que lo que protege los datos son las reglas.
