@@ -112,6 +112,7 @@ Sin entradas archivadas todavía.
 ## 7. MEMORIA
 
 - [opencode-1] Tarea activa: ninguna. Migración Ruta B ejecutada el 2026-10-12: se unificaron `Audio-Studio-Base-Conocimiento.md` y `Audio-Studio-Manual-Skills.md` en este archivo, y los originales quedaron en `archivados/` (locales, fuera del repo por contener credenciales).
+- [opencode-1] Cambio fuera del código el 2026-10-12: la descripción del repositorio en GitHub era más larga y con coletilla publicitaria ("funciona 100% en el navegador"), y además omitía las portadas. Se sustituyó por el texto de la `meta description` de la propia página: "Edita metadatos, cambia portadas y convierte entre MP3 y WAV". No se tocó ningún archivo del proyecto ni hubo despliegue.
 - [opencode-1] Resuelto en v2: `sw.js` declaraba `VERSION = 'v2.1.0'` frente a una app en `v3.1.0`. Alineados y subida la caché a `audio-studio-v5`. La lección 5 nº 11 queda resuelta en la práctica.
 - [opencode-1] Resuelto sin intervención: el remoto local apuntaba a `Metadata`, pero el push a `master` actualizó solo la URL al nombre actual `Metadata-WAV-Studio-by-SandovalJon`, porque Git detecta el renombrado en el servidor y reescribe el remoto. Verificado con `git remote get-url origin`.
 - [opencode-1] Corregido: la documentación heredada declaraba versión `v2.0.0` del 2026-09-23 y caché `audio-studio-v2`; el código real es `v3.1.0` en `index.html:850`, commit `8eb519c`. Se adoptó lo verificado.
