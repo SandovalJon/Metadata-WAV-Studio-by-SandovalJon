@@ -1,6 +1,6 @@
 # AUDIOSTUDIO — Custodia del Proyecto
 
-> Última actualización: 2026-10-13 · Versión del documento: v3
+> Última actualización: 2026-10-13 · Versión del documento: v4
 
 ## Mapa del documento
 
@@ -52,7 +52,7 @@ Lectura por defecto: `7. MEMORIA` y este mapa. Las secciones `1`–`5` se abren 
 - Dónde vive la configuración: la configuración de Firebase (clave de API, dominio de autenticación e identificador de proyecto) está incrustada en `index.html`, líneas 2528 a 2530. El identificador de la cuenta propietaria que habilita el tema Esmeralda también está en el código. No hay variables de entorno ni archivo de configuración aparte.
 - Aviso de privacidad: esta sección referencia configuración sensible. Uso local. No subir a repos.
 - Esquemas de datos: mapeo de ID3v2 en MP3: TIT2 título, TPE1 artista, TALB álbum, TPE2 artista del álbum, TYER año, TRCK pista, TCON género, TCOM compositor, COMM comentario, APIC portada. Mapeo de LIST-INFO en WAV: INAM título, IART artista, IPRD álbum, ICRD año, ITRK pista, IGNR género, ICMT comentario.
-- Reglas de acceso a datos: `firestore.rules`, política de denegar todo, porque la app no usa Firestore. `firebase.json` y `.firebaserc` permiten desplegarla con la CLI de Firebase. El proyecto no tiene reglas versionadas antes de esto: las reglas vivían solo en la consola y no estaban registradas en el repositorio.
+- Reglas de acceso a datos: `firestore.rules`, política de denegar todo, publicada en el proyecto desde la v4. `firebase.json` y `.firebaserc` permiten desplegarla con la CLI. La base de datos `default` se creó en ese mismo despliegue: antes el proyecto no tenía ninguna. El proyecto no tenía reglas versionadas hasta la v3: vivían solo en la consola y no estaban registradas en el repositorio.
 - Aviso de privacidad: la política de denegar todo no es solo preventiva. Con reglas abiertas, cualquiera podía leer y escribir en la base de datos usando la configuración pública del cliente que está incrustada en `index.html`.
 - Memoria / almacenamiento: claves de `localStorage`: `theme`, `lastTab`, `wavPresets`, `draftFields`, `compactMode` y `windowSize`. Sin IndexedDB.
 
@@ -86,6 +86,7 @@ Lectura por defecto: `7. MEMORIA` y este mapa. Las secciones `1`–`5` se abren 
 12. Documentar credenciales en Markdown las filtra a los repos — Causa raíz: el archivo heredado contenía la clave de API de Firebase en texto plano, y el repositorio es público. · Fix: este documento registra solo dónde vive la configuración y lleva el aviso de privacidad; el valor no se copia nunca. · Verificación: la sección `3. RECURSOS` de este archivo no contiene ninguna clave.
 13. La apiKey de un cliente Firebase no es un secreto — Causa raíz: se propuso rotar la clave como prioridad de seguridad, pero la `apiKey` de una app web de Firebase está pensada para ir incrustada en el código público y se ve en cualquier sitio que use Firebase. Rotarla no protege los datos. · Fix: lo que protege los datos son las reglas de Firestore y de Storage, que es lo que se añadió en la v3. · Verificación: la `apiKey` sigue visible en `index.html` y el sitio sigue funcionando tras desplegar reglas restrictivas.
 14. Las funciones de acceso a datos pueden quedar muertas y aun así abrir un agujero — Causa raíz: `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc` están definidas en `index.html:2541-2560` y nunca se invocan, así que la app no usa Firestore. · Fix: antes de endurecer reglas o contratar sincronización, comprobar si el código realmente llama a esas funciones. · Verificación: conteo de llamadas sobre todo el repositorio, hecho el 2026-10-13.
+15. En Windows los wrappers `.ps1` de las CLIs están bloqueados y su error se confunde con un fallo de la herramienta — Causa raíz: PowerShell con política de ejecución restringida impide cargar `npm.ps1` y `firebase.ps1`. El mensaje `No se puede cargar el archivo ... porque la ejecución de scripts está deshabilitada` se lee como si la herramienta estuviera rota, cuando el problema es el intérprete. · Fix: invocar siempre los wrappers `.cmd`, por ejemplo `npm.cmd` y `& "$env:APPDATA\npm\firebase.cmd"`. Alternativa permanente: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. · Verificación: `firebase.cmd --version` devolvió `15.33.0` mientras `firebase` fallaba; el despliegue se completó con el wrapper `.cmd`.
 
 ## 5b. LECCIONES (archivo)
 
@@ -106,12 +107,14 @@ Sin entradas archivadas todavía.
     - Verificación: el valor actual es `audio-studio-v5`, leído de `sw.js`.
     - Agente: [opencode-1]
 
-- Skill: desplegar las reglas de Firestore — Estado: pendiente de verificación
+- Skill: desplegar las reglas de Firestore — Estado: verificada
   - Propósito: aplicar `firestore.rules` en el proyecto Firebase, tanto desde la consola como desde la CLI.
-  - Precondiciones: Node instalado; para la CLI, `npm install -g firebase-tools` y `firebase login`. Los archivos `firestore.rules`, `firebase.json`, `firestore.indexes.json` y `.firebaserc` ya están en el repositorio y apuntan al proyecto `metadata---wav-studio`.
+  - Precondiciones: para la CLI, `npm install -g firebase-tools` y `firebase login`. En Windows hay que invocar el wrapper `.cmd`, no el `.ps1`, porque PowerShell bloquea la ejecución de scripts y el error resultante parece un fallo de Firebase. Para la consola, acceso al proyecto.
+  - En Windows: `& "$env:APPDATA\npm\firebase.cmd" deploy --only firestore:rules`. Con `firebase` a secas falla con `No se puede cargar el archivo firebase.ps1`.
   - Pasos por consola: abrir el proyecto en la consola de Firebase · ir a **Firestore → Reglas** · borrar el contenido y pegar `firestore.rules` · **Publicar**.
-  - Pasos por CLI: `firebase deploy --only firestore:rules` y después `firebase deploy --only firestore:indexes`.
-  - Verificación: leer las reglas publicadas con `firebase firestore:rules` o en la consola, y comprobar que una lectura sin sesión falla. Pendiente de que el usuario ejecute el despliegue: el agente no tiene credenciales de Firebase.
+  - Pasos por CLI: `firebase deploy --only firestore:rules` y después `firebase deploy --only firestore:indexes`. El despliegue habilita la API `firestore.googleapis.com` y crea la base `default` si no existían.
+  - Verificación: el log debe incluir `rules file firestore.rules compiled successfully` y `released rules firestore.rules to cloud.firestore`. Comprobación desde fuera, sin sesión y con la configuración pública del cliente: una lectura y una escritura deben devolver `403 PERMISSION_DENIED` con `Missing or insufficient permissions`. Si devuelven `Cloud Firestore API has not been used`, la API sigue deshabilitada y las reglas no se están evaluando.
+  - Verificado por: despliegue ejecutado el 2026-10-13, con las dos comprobaciones externas dando `403 PERMISSION_DENIED`.
   - Agente: [opencode-1]
 
 - Skill: comprobar si la app usa realmente Firestore — Estado: verificada
@@ -129,7 +132,8 @@ Sin entradas archivadas todavía.
 
 ## 7. MEMORIA
 
-- [opencode-1] Tarea activa: ninguna. Migración Ruta B ejecutada el 2026-10-12: se unificaron `Audio-Studio-Base-Conocimiento.md` y `Audio-Studio-Manual-Skills.md` en este archivo, y los originales quedaron en `archivados/` (locales, fuera del repo por contener credenciales).
+- [opencode-1] Tarea activa: ninguna. En la v4 se publicaron las reglas de Firestore y se verificó el bloqueo desde fuera. La app sigue sin usar la nube: las funciones `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc` continúan sin invocarse, así que la base de datos está vacía y bloqueada para todos, sesión incluida o no.
+- [opencode-1] Añadida la lección 15: los wrappers `.ps1` de npm y firebase-tools están bloqueados por la política de ejecución de PowerShell, y el error resultante se confunde con un fallo de la herramienta. Hay que invocar siempre los wrappers `.cmd`.
 - [opencode-1] Cambio fuera del código el 2026-10-12: la descripción del repositorio en GitHub era más larga y con coletilla publicitaria ("funciona 100% en el navegador"), y además omitía las portadas. Se sustituyó por el texto de la `meta description` de la propia página: "Edita metadatos, cambia portadas y convierte entre MP3 y WAV". No se tocó ningún archivo del proyecto ni hubo despliegue.
 - [opencode-1] Resuelto en v2: `sw.js` declaraba `VERSION = 'v2.1.0'` frente a una app en `v3.1.0`. Alineados y subida la caché a `audio-studio-v5`. La lección 5 nº 11 queda resuelta en la práctica.
 - [opencode-1] Resuelto sin intervención: el remoto local apuntaba a `Metadata`, pero el push a `master` actualizó solo la URL al nombre actual `Metadata-WAV-Studio-by-SandovalJon`, porque Git detecta el renombrado en el servidor y reescribe el remoto. Verificado con `git remote get-url origin`.
@@ -163,7 +167,14 @@ Sin entradas archivadas todavía.
   - Qué cambió: se añadieron `firestore.rules`, `firebase.json`, `firestore.indexes.json` y `.firebaserc`. La política es `allow read, write: if false` en todo, con un bloque comentado y listo para activar cuando la app use la nube de verdad. No se modificó el código de la aplicación y no hubo despliegue: las reglas se aplican desde la consola o con la CLI de Firebase, no desde GitHub.
   - Secciones actualizadas: `3. RECURSOS` describe la política y su porqué · `6. SKILLS` registra el despliegue de las reglas por consola y por CLI, y la comprobación de si la app usa Firestore · `5. LECCIONES` añade que la apiKey de cliente no es un secreto y que lo que protege los datos son las reglas.
   - Verificación: los tres JSON validan con `ConvertFrom-Json`; `firestore.rules` tiene 53 líneas y conserva la sintaxis esperada (`rules_version = '2'`, `service cloud.firestore`, `match`, `allow`); se confirmó que la app no invoca `saveDoc`, `loadDoc`, `loadUserDocs` ni `deleteDoc` en ningún punto, solo las define. Las reglas aplicadas en el proyecto Firebase no se pueden verificar desde aquí: el agente no tiene credenciales.
-  - Pendientes: el usuario debe publicar las reglas en la consola de Firebase o con la CLI; queda sin decidir si la app llegará a usar Firestore.
+    - Pendientes: el usuario debe publicar las reglas en la consola de Firebase o con la CLI; queda sin decidir si la app llegará a usar Firestore.
+
+- v4 | 2026-10-13 | Publicar las reglas de Firestore y verificar el bloqueo | código: 9c37b27
+  - Agente: [opencode-1]
+  - Qué cambió: se publicaron las reglas en el proyecto Firebase con `firebase deploy --only firestore:rules`. El despliegue hizo dos cosas que no estaban previstas: habilitó la API `firestore.googleapis.com`, que estaba apagada, y creó la base de datos `default`, que no existía. No se modificó el código de la aplicación ni hubo despliegue en GitHub Pages.
+  - Secciones actualizadas: `6. SKILLS` marca la skill de despliegue de reglas como verificada y documenta el uso del wrapper `.cmd` en Windows · `7. MEMORIA` registra que las reglas están activas y que la app sigue sin usar la nube · `3. RECURSOS` matiza que la base de datos existe desde esta versión. La entrada v3 se deja sin reescribir, aunque sus dos últimas afirmaciones quedaron desmentidas por este despliegue.
+  - Verificación: la CLI registró `rules file firestore.rules compiled successfully` y `released rules firestore.rules to cloud.firestore`. Desde fuera del proyecto, con la configuración pública del cliente y sin sesión, una lectura y una escritura devuelven `403 PERMISSION_DENIED` con el mensaje `Missing or insufficient permissions`. Antes del despliegue devolvían `Cloud Firestore API has not been used`, porque la API estaba deshabilitada; el cambio de mensaje confirma que la API está activa y que las reglas están evaluándose.
+  - Pendientes: queda sin decidir si la app llegará a usar Firestore; si lo hace, hay que activar el bloque por usuario y crear el índice compuesto para `loadUserDocs`.
 
 ## 8b. VERSIONES (archivo)
 
