@@ -1,4 +1,4 @@
-const CACHE = 'audio-studio-v5';
+const CACHE = 'audio-studio-v6';
 const VERSION = 'v3.1.0';
 const ASSETS = [
   './',
