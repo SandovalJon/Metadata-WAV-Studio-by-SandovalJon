@@ -1,6 +1,6 @@
 # AUDIOSTUDIO — Custodia del Proyecto
 
-> Última actualización: 2026-10-13 · Versión del documento: v4
+> Última actualización: 2026-10-13 · Versión del documento: v5
 
 ## Mapa del documento
 
@@ -30,7 +30,7 @@ Lectura por defecto: `7. MEMORIA` y este mapa. Las secciones `1`–`5` se abren 
 ## 2. ARQUITECTURA
 
 - Componentes: aplicación de archivo único más los artefactos de PWA. `sw.js` precarga el propio servicio, sus iconos y las cuatro librerías externas que la app necesita.
-- Cómo se conectan: Firebase aporta autenticación con Google y Firestore para datos de usuario. Las librerías de audio llegan por CDN y quedan cacheadas por el service worker para el uso sin conexión.
+- Cómo se conectan: Firebase aporta únicamente autenticación con Google. La app no guarda datos en la nube: desde la v5 no hay acceso a Firestore. Las librerías de audio llegan por CDN y quedan cacheadas por el service worker para el uso sin conexión.
 - Entry points: `index.html`. GitHub Pages se construye desde la rama `gh-pages`, no desde `master`.
 - Flujos clave:
   1. El usuario arrastra o selecciona uno o varios archivos MP3 o WAV.
@@ -85,7 +85,7 @@ Lectura por defecto: `7. MEMORIA` y este mapa. Las secciones `1`–`5` se abren 
 11. La versión de la app y la del service worker se desincronizan — Causa raíz: la app declara `v3.1.0` en `index.html:850` mientras `sw.js` declara `VERSION = 'v2.1.0'` y caché `audio-studio-v4`; nadie sincronizó ambas tras las últimas entregas. · Fix: derivar la versión del service worker de la de la app, o declararlas juntas en un único punto. · Verificación: comparación directa de ambos ficheros, realizada el 2026-10-12.
 12. Documentar credenciales en Markdown las filtra a los repos — Causa raíz: el archivo heredado contenía la clave de API de Firebase en texto plano, y el repositorio es público. · Fix: este documento registra solo dónde vive la configuración y lleva el aviso de privacidad; el valor no se copia nunca. · Verificación: la sección `3. RECURSOS` de este archivo no contiene ninguna clave.
 13. La apiKey de un cliente Firebase no es un secreto — Causa raíz: se propuso rotar la clave como prioridad de seguridad, pero la `apiKey` de una app web de Firebase está pensada para ir incrustada en el código público y se ve en cualquier sitio que use Firebase. Rotarla no protege los datos. · Fix: lo que protege los datos son las reglas de Firestore y de Storage, que es lo que se añadió en la v3. · Verificación: la `apiKey` sigue visible en `index.html` y el sitio sigue funcionando tras desplegar reglas restrictivas.
-14. Las funciones de acceso a datos pueden quedar muertas y aun así abrir un agujero — Causa raíz: `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc` están definidas en `index.html:2541-2560` y nunca se invocan, así que la app no usa Firestore. · Fix: antes de endurecer reglas o contratar sincronización, comprobar si el código realmente llama a esas funciones. · Verificación: conteo de llamadas sobre todo el repositorio, hecho el 2026-10-13.
+14. Las funciones de acceso a datos pueden quedar muertas y aun así abrir un agujero — Causa raíz: `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc` estaban definidas en `index.html:2539-2560` y nunca se invocaban, así que la app no usaba Firestore. · Fix: antes de endurecer reglas o contratar sincronización, comprobar si el código realmente llama a esas funciones; si no las llama, conviene borrarlas para que nadie las dé por conectadas. · Verificación: conteo de llamadas sobre todo el repositorio el 2026-10-13. Resuelto en la v5, con las reglas ya publicadas desde la v4.
 15. En Windows los wrappers `.ps1` de las CLIs están bloqueados y su error se confunde con un fallo de la herramienta — Causa raíz: PowerShell con política de ejecución restringida impide cargar `npm.ps1` y `firebase.ps1`. El mensaje `No se puede cargar el archivo ... porque la ejecución de scripts está deshabilitada` se lee como si la herramienta estuviera rota, cuando el problema es el intérprete. · Fix: invocar siempre los wrappers `.cmd`, por ejemplo `npm.cmd` y `& "$env:APPDATA\npm\firebase.cmd"`. Alternativa permanente: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`. · Verificación: `firebase.cmd --version` devolvió `15.33.0` mientras `firebase` fallaba; el despliegue se completó con el wrapper `.cmd`.
 
 ## 5b. LECCIONES (archivo)
@@ -132,7 +132,7 @@ Sin entradas archivadas todavía.
 
 ## 7. MEMORIA
 
-- [opencode-1] Tarea activa: ninguna. En la v4 se publicaron las reglas de Firestore y se verificó el bloqueo desde fuera. La app sigue sin usar la nube: las funciones `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc` continúan sin invocarse, así que la base de datos está vacía y bloqueada para todos, sesión incluida o no.
+- [opencode-1] Tarea activa: ninguna. En la v5 se eliminó el código muerto de Firestore. El proyecto Firebase queda con la base `default` creada y las reglas en modo denegar todo, publicado en la v4, pero sin ningún uso desde el lado de la app: es infraestructura preparada por si algún día se quiere sincronización.
 - [opencode-1] Añadida la lección 15: los wrappers `.ps1` de npm y firebase-tools están bloqueados por la política de ejecución de PowerShell, y el error resultante se confunde con un fallo de la herramienta. Hay que invocar siempre los wrappers `.cmd`.
 - [opencode-1] Cambio fuera del código el 2026-10-12: la descripción del repositorio en GitHub era más larga y con coletilla publicitaria ("funciona 100% en el navegador"), y además omitía las portadas. Se sustituyó por el texto de la `meta description` de la propia página: "Edita metadatos, cambia portadas y convierte entre MP3 y WAV". No se tocó ningún archivo del proyecto ni hubo despliegue.
 - [opencode-1] Resuelto en v2: `sw.js` declaraba `VERSION = 'v2.1.0'` frente a una app en `v3.1.0`. Alineados y subida la caché a `audio-studio-v5`. La lección 5 nº 11 queda resuelta en la práctica.
@@ -143,7 +143,7 @@ Sin entradas archivadas todavía.
 - [opencode-1] Decisión: `NOMBRE` es `AUDIOSTUDIO` — motivo: la carpeta y el repo describen el proyecto como "Metadata / WAV Studio", pero el nombre real de la aplicación en `manifest.json` y en la documentación heredada es "Audio Studio" — estado: tomada.
 - [opencode-1] Decisión: Pages se despliega desde `gh-pages` y no desde `master` — motivo: así consta en la configuración de Pages y en el procedimiento heredado — estado: tomada.
 - Preferencias del usuario: español; respuestas concisas; un archivo de custodia por página; quiere que el agente ejecute y publique sin pedir confirmación paso a paso.
-- Comprometidos: Firebase Auth y Firestore siguen siendo dependencias para la parte de datos de usuario. El tema Esmeralda está restringido a la cuenta de propietario.
+- Comprometidos: Firebase Auth sigue siendo la única dependencia de Firebase, usada para el login con Google. Firestore está desplegado pero sin uso desde la v5. El tema Esmeralda está restringido a la cuenta de propietario.
 - Ideas (no comprometidos): deshacer/rehacer global, modo oscuro automático, exportar configuración a JSON, copiar metadatos al portapapeles, efecto ripple, partículas de fondo, buscar en la lista de idiomas y recordar el tamaño de ventana. Ninguna comprometida.
 
 ## 8. VERSIONES
@@ -175,6 +175,13 @@ Sin entradas archivadas todavía.
   - Secciones actualizadas: `6. SKILLS` marca la skill de despliegue de reglas como verificada y documenta el uso del wrapper `.cmd` en Windows · `7. MEMORIA` registra que las reglas están activas y que la app sigue sin usar la nube · `3. RECURSOS` matiza que la base de datos existe desde esta versión. La entrada v3 se deja sin reescribir, aunque sus dos últimas afirmaciones quedaron desmentidas por este despliegue.
   - Verificación: la CLI registró `rules file firestore.rules compiled successfully` y `released rules firestore.rules to cloud.firestore`. Desde fuera del proyecto, con la configuración pública del cliente y sin sesión, una lectura y una escritura devuelven `403 PERMISSION_DENIED` con el mensaje `Missing or insufficient permissions`. Antes del despliegue devolvían `Cloud Firestore API has not been used`, porque la API estaba deshabilitada; el cambio de mensaje confirma que la API está activa y que las reglas están evaluándose.
   - Pendientes: queda sin decidir si la app llegará a usar Firestore; si lo hace, hay que activar el bloque por usuario y crear el índice compuesto para `loadUserDocs`.
+
+- v5 | 2026-10-13 | Eliminar el código muerto de Firestore | código: f32c863
+  - Agente: [opencode-1]
+  - Qué cambió: se eliminaron `const db = firebase.firestore()` y las cuatro funciones `saveDoc`, `loadDoc`, `loadUserDocs` y `deleteDoc`, que ocupaban 22 líneas y nunca se invocaban. `index.html` baja de 3.796 a 3.609 líneas. Se conserva la configuración de Firebase y todo el login con Google, que sí se usan. La caché del service worker sube de `audio-studio-v5` a `audio-studio-v6` en el commit `2cca52c`, para que los clientes no se queden con el `index.html` viejo.
+  - Secciones actualizadas: `2. ARQUITECTURA` deja de declarar Firestore como parte del flujo · `4. CAPACIDADES` deja de listar persistencia en la nube como capacidad de la app · `5. LECCIONES` actualiza la 14, que queda resuelta · `6. SKILLS` incorpora la prueba en jsdom que confirma que la app arranca y no invoca `firebase.firestore()`.
+  - Verificación: `node --check` del script inline sin errores; cero referencias residuales a `saveDoc`, `loadDoc`, `loadUserDocs`, `deleteDoc`, `firebase.firestore` y `db.collection` en el repositorio; prueba funcional en jsdom con Firebase simulado, que da cero errores, `firebase.firestore()` invocado `false`, `doLogin` y `doLogout` definidos y botón de login presente.
+  - Pendientes: si algún día se quiere sincronización en la nube, hay que reimplementar el acceso a datos y activar el bloque por usuario que sigue comentado en `firestore.rules`.
 
 ## 8b. VERSIONES (archivo)
 
