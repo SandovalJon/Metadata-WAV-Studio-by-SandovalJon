@@ -2536,28 +2536,6 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const provider = new firebase.auth.GoogleAuthProvider();
-  const db = firebase.firestore();
-
-  async function saveDoc(collection, id, data) {
-    await db.collection(collection).doc(id).set(data, { merge: true });
-  }
-
-  async function loadDoc(collection, id) {
-    const snap = await db.collection(collection).doc(id).get();
-    return snap.exists ? snap.data() : null;
-  }
-
-  async function loadUserDocs(collection, uid) {
-    const snap = await db.collection(collection)
-      .where('uid', '==', uid)
-      .orderBy('createdAt', 'desc')
-      .get();
-    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  }
-
-  async function deleteDoc(collection, id) {
-    await db.collection(collection).doc(id).delete();
-  }
 
   window.doLogin = function () {
     auth.signInWithPopup(provider).catch(err => {
